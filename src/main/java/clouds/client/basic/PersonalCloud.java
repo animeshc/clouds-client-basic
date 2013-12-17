@@ -2771,26 +2771,27 @@ public class PersonalCloud {
 
 		return m;
 	}
-	/*
+	/**
 	 * Saves Email in the Personal Cloud
-	 * @email : The mail object
-	 * @mailId : The unique identifier for the mail object. Used for update.
+	 * @param email : The mail object
+	 * @param mailId : The unique identifier for the mail object. Used for update.
 	 * @return : Unique Id for the mail object for new mails
 	 */
 	public String saveEmail(PDSEmail email , String mailId){
 		
 		String id = "";
-		if(mailId == null){
+		if(email.getOperation().equals("ADD")){
 			id = "!:uuid:"+UUID.randomUUID().toString();
-		} else {
+		} else { //UPDATE
 			id = mailId;
 		}
 		
 		ArrayList <XDI3Statement> setStmts = new ArrayList <XDI3Statement>();
 		
+		
 		String setStmt = "";
 		
-		if(mailId == null){
+		if(email.getOperation().equals("ADD")){
 			setStmt += 	this.cloudNumber.toString();
 			setStmt += "[+email]";
 			
@@ -2844,23 +2845,49 @@ public class PersonalCloud {
 			setStmt += "[+email]";
 			setStmt += id ;
 			setStmt += "[<+tag>]";
-			String tagId = "!:uuid:"+UUID.randomUUID().toString();
+			String tagId = "";
+			if(tag.getOperation().equals("ADD")){
+				tagId = "!:uuid:"+UUID.randomUUID().toString();
+				tag.setId(tagId);
+			} else {
+				tagId = tag.getId();
+			}
 			setStmt += tagId;
-			if(tag.getName() != null){
-				setStmt += "<+name>&/&/\"" + tag.getName() + "\"";
+			if(!tag.getOperation().equals("REMOVE")) {
+				if(tag.getName() != null){
+					setStmt += "<+name>&/&/\"" + tag.getName() + "\"";
+				}
+			
+				if (tag.getValue() != null){
+					setStmt += "<+value>&/&/\"" + tag.getValue() + "\"";
+				}
+				
+				if(tag.getCategory() != null){
+					setStmt += "<+category>&/&/\"" + tag.getCategory() + "\"";
+				}
+				setStmts.add(XDI3Statement.create(setStmt));
+			} else {
+				this.deleteNodeTree(XDI3Segment.create(setStmt));
 			}
-			if (tag.getValue() != null){
-				setStmt += "<+value>&/&/\"" + tag.getValue() + "\"";
-			}
-			if(tag.getCategory() != null){
-				setStmt += "<+category>&/&/\"" + tag.getCategory() + "\"";
-			}
-			setStmts.add(XDI3Statement.create(setStmt));
+			
 		}
 
 		MessageResult result = this.setXDIStmts(setStmts);
 		System.out.println("\n Save mail:\n" + result.toString() + "\n");
+		
 		return id;
+	}
+	/**
+	 * Delete a mail in the Personal Cloud
+	 * @param id : UUID of the email which was generated when the email was saved
+	 * @return : NONE
+	 */
+	public void deleteEmail(String id){
+		
+		String delStmt = 	this.cloudNumber.toString();
+		delStmt += "[+email]";
+		delStmt += id ;
+		this.deleteNodeTree(XDI3Segment.create(delStmt));
 	}
 
 }

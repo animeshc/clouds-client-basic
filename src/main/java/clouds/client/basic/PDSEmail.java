@@ -13,7 +13,14 @@ public class PDSEmail {
 	private Vector<Microtag> tagList = new Vector<Microtag>();
 	private int priority = 0;
 	private int flag = 0;
+	private String operation = "ADD";
 	
+	public String getOperation() {
+		return operation;
+	}
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
 	public int getFlag() {
 		return flag;
 	}
@@ -65,7 +72,7 @@ public class PDSEmail {
 		for(Microtag theTag : tagList){
 			
 			if(theTag.getName().equals(tag.getName())){
-				tagList.remove(i);
+				theTag.setOperation("REMOVE");
 				break;
 			}
 			i++;
@@ -76,8 +83,7 @@ public class PDSEmail {
 		for(Microtag theTag : tagList){
 			
 			if(theTag.getName().equals(tag.getName())){
-				tagList.remove(i);
-				tagList.insertElementAt(tag, i);
+				theTag.setOperation("UPDATE");
 				break;
 			}
 			i++;

@@ -7,6 +7,22 @@ public class Microtag {
 	private String name;
 	private String value;
 	
+	private String id;
+	
+	private String operation="ADD";
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getOperation() {
+		return operation;
+	}
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
 	public String getValue() {
 		return value;
 	}
