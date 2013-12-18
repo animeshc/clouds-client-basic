@@ -15,10 +15,12 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.Vector;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -31,6 +33,7 @@ import xdi2.core.Graph;
 import xdi2.core.Literal;
 import xdi2.core.Relation;
 import xdi2.core.exceptions.Xdi2ParseException;
+import xdi2.core.features.nodetypes.XdiAbstractMemberUnordered;
 import xdi2.core.features.nodetypes.XdiPeerRoot;
 import xdi2.core.features.signatures.KeyPairSignature;
 import xdi2.core.features.signatures.Signature;
@@ -1191,18 +1194,11 @@ public class PersonalCloud {
 	public void deleteNodeTree(XDI3Segment target) {
 		XDIClient xdiClient = new XDIHttpClient(cloudEndpointURI);
 
-		// prepare message envelope for deleting the link contract for the
-		// assignee
-
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
 		Message message = messageEnvelope.createMessage(cloudNumber, 0);
 		message.setLinkContractXri(linkContractAddress);
 		message.setSecretToken(secretToken);
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
-
-		// message.createDelOperation(XDI3Statement.create(assigneeCN.toString()
-		// + "$do$if$and/$true/({$from}/$is/" + assigneeCN.toString()
-		// + ")"));
 		message.createDelOperation(target);
 
 		// System.out.println("Message :\n" + messageEnvelope + "\n");
@@ -2777,13 +2773,14 @@ public class PersonalCloud {
 	 * @param mailId : The unique identifier for the mail object. Used for update.
 	 * @return : Unique Id for the mail object for new mails
 	 */
-	public String saveEmail(PDSEmail email , String mailId){
+	public String saveEmail(PDSEmail email ){
 		
 		String id = "";
 		if(email.getOperation().equals("ADD")){
 			id = "!:uuid:"+UUID.randomUUID().toString();
+			email.setId(id);
 		} else { //UPDATE
-			id = mailId;
+			id = email.getId();
 		}
 		
 		ArrayList <XDI3Statement> setStmts = new ArrayList <XDI3Statement>();
@@ -2816,9 +2813,29 @@ public class PersonalCloud {
 			setStmt += "[+email]";
 			setStmt += id ;
 			setStmt += "<+subject>&/&/\"";
+			setStmt += email.getSubject();
+			setStmt += "\"";
+			setStmts.add(XDI3Statement.create(setStmt));
+			
+			setStmt = "";	
+			setStmt += 	this.cloudNumber.toString();
+			setStmt += "[+email]";
+			setStmt += id ;
+			setStmt += "<+content>&/&/\"";
 			setStmt += email.getContent();
 			setStmt += "\"";
 			setStmts.add(XDI3Statement.create(setStmt));
+
+			
+			//build a sender index
+			setStmt = "";	
+			setStmt += 	this.cloudNumber.toString();
+			setStmt += "[+email]" + XdiAbstractMemberUnordered.createDigestArcXri(email.getFrom().toLowerCase(), false)+ "/+from/";
+			setStmt += this.cloudNumber.toString(); ;
+			setStmt += "[+email]";
+			setStmt += id ;
+			setStmts.add(XDI3Statement.create(setStmt));
+			
 		}
 		setStmt = "";	
 		setStmt += 	this.cloudNumber.toString();
@@ -2826,7 +2843,6 @@ public class PersonalCloud {
 		setStmt += id ;
 		setStmt += "<+priority>&/&/";
 		setStmt += email.getPriority();
-		
 		setStmts.add(XDI3Statement.create(setStmt));
 		
 		setStmt = "";	
@@ -2835,42 +2851,7 @@ public class PersonalCloud {
 		setStmt += id ;
 		setStmt += "<+flag>&/&/";
 		setStmt += email.getFlag();
-		
 		setStmts.add(XDI3Statement.create(setStmt));
-		
-		for(Microtag tag : email.getTagList()){
-
-			setStmt = "";	
-			setStmt += 	this.cloudNumber.toString();
-			setStmt += "[+email]";
-			setStmt += id ;
-			setStmt += "[<+tag>]";
-			String tagId = "";
-			if(tag.getOperation().equals("ADD")){
-				tagId = "!:uuid:"+UUID.randomUUID().toString();
-				tag.setId(tagId);
-			} else {
-				tagId = tag.getId();
-			}
-			setStmt += tagId;
-			if(!tag.getOperation().equals("REMOVE")) {
-				if(tag.getName() != null){
-					setStmt += "<+name>&/&/\"" + tag.getName() + "\"";
-				}
-			
-				if (tag.getValue() != null){
-					setStmt += "<+value>&/&/\"" + tag.getValue() + "\"";
-				}
-				
-				if(tag.getCategory() != null){
-					setStmt += "<+category>&/&/\"" + tag.getCategory() + "\"";
-				}
-				setStmts.add(XDI3Statement.create(setStmt));
-			} else {
-				this.deleteNodeTree(XDI3Segment.create(setStmt));
-			}
-			
-		}
 
 		MessageResult result = this.setXDIStmts(setStmts);
 		System.out.println("\n Save mail:\n" + result.toString() + "\n");
@@ -2883,11 +2864,127 @@ public class PersonalCloud {
 	 * @return : NONE
 	 */
 	public void deleteEmail(String id){
-		
-		String delStmt = 	this.cloudNumber.toString();
+
+		//delete from sender index
+		PDSEmail mail = this.getEmail(id);
+		if(mail == null){
+			return;
+		}
+		String delStmt = "";	
+		delStmt += 	this.cloudNumber.toString();
+		delStmt += "[+email]" + XdiAbstractMemberUnordered.createDigestArcXri(mail.getFrom().toLowerCase(), false) ;
+		this.deleteNodeTree(XDI3Segment.create(delStmt));
+
+		//delete the email node
+		delStmt = 	this.cloudNumber.toString();
 		delStmt += "[+email]";
 		delStmt += id ;
 		this.deleteNodeTree(XDI3Segment.create(delStmt));
+	}
+	
+	public PDSEmail getEmail(String uuid){
+		String queryStmt = "";			
+		queryStmt += this.cloudNumber.toString();
+		queryStmt += "[+email]";
+		queryStmt += uuid;
+		
+		MessageResult result = this.getXDIStmts(XDI3Segment.create(queryStmt), false);
+		Graph g = result.getGraph();
+		if(g != null && g.getRootContextNode().getAllLiteralCount() > 0) {
+			g.toString("XDI DISPLAY",null);
+			PDSEmail mail = new PDSEmail();
+		
+			mail.setId(uuid);
+			Literal from = g.getDeepLiteral(XDI3Segment.create(queryStmt+"<+sender>&"));
+			if(from != null){
+				mail.setFrom(from.getLiteralDataString());
+			}
+			
+			Literal arrTime = g.getDeepLiteral(XDI3Segment.create(queryStmt+"<+date>&"));
+			if(arrTime != null){
+				mail.setArrivalTime(new Date(arrTime.getLiteralDataString()));
+			}
+			Literal subject = g.getDeepLiteral(XDI3Segment.create(queryStmt+"<+subject>&"));
+			if(subject != null){
+				mail.setSubject(subject.getLiteralDataString());
+			}
+			Literal content = g.getDeepLiteral(XDI3Segment.create(queryStmt+"<+content>&"));
+			if(content != null){
+				mail.setContent(content.getLiteralDataString());
+			}
+			return mail;
+			
+		}
+		return null;
+	}
+	/**
+	 * 
+	 * @param sender
+	 * @return
+	 */
+	public Vector<PDSEmail> getEmailBySender(String sender){
+		Vector<PDSEmail> result = new Vector<PDSEmail>();
+		String queryStmt = this.cloudNumber.toString();
+		queryStmt += "[+email]";
+		queryStmt += XdiAbstractMemberUnordered.createDigestArcXri(sender.toLowerCase(), false);
+		
+		MessageResult response = this.getXDIStmts(XDI3Segment.create(queryStmt), false);
+		Graph g = response.getGraph();
+		
+		if(g != null && g.getRootContextNode().getAllContextNodeCount() > 0){
+			System.out.println(g.toString("XDI DISPLAY", null));	
+			ContextNode root = g.getRootContextNode();
+			ReadOnlyIterator<Relation> rels = root.getDeepRelations(XDI3Segment.create(queryStmt), XDI3Segment.create("+from"));
+			
+			for(Relation r : rels){
+				XDI3Segment m = r.getTargetContextNodeXri();
+				String fqMailId = m.toString();
+				String mailUUID = fqMailId.substring(this.cloudNumber.toString().length() + new String("[+email]").length());
+				PDSEmail mail = this.getEmail(mailUUID);
+				result.add(mail);
+			}
+		}
+		
+		return result;
+	}
+	/**
+	 * labels are added as relations
+	 * @param mail
+	 * @param label
+	 */
+	public void addEmailLabel(String id , String label){
+		
+		PDSEmail mail = this.getEmail(id);
+		if(mail == null){
+			return ;
+		}
+		ArrayList <XDI3Statement> setStmts = new ArrayList <XDI3Statement>();
+		String setStmt = "";	
+		setStmt += 	this.cloudNumber.toString();
+		setStmt += "[+email]/" + "+" + label + "/";
+		setStmt += this.cloudNumber.toString()+ "[+email]" + id ;
+		setStmts.add(XDI3Statement.create(setStmt));
+		MessageResult result = this.setXDIStmts(setStmts);
+	}
+	/**
+	 * Remove the relation for the label
+	 * @param mail
+	 * @param label
+	 */
+	public void removeEmailLabel(String id , String label){
+		PDSEmail mail = this.getEmail(id);
+		if(mail == null){
+			return ;
+		}
+		ArrayList<XDI3Statement> delStmts = new ArrayList<XDI3Statement>();
+		String delStmt = "";	
+		delStmt += 	this.cloudNumber.toString();
+		delStmt += "[+email]/" + "+" + label + "/";
+		delStmt += this.cloudNumber.toString()+ "[+email]" + id ;
+		
+		delStmts.add(XDI3Statement.create(delStmt));
+		this.delXDIStmts(delStmts, null);
+		
 	}
 
 }

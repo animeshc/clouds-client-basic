@@ -10,11 +10,19 @@ public class PDSEmail {
 	private String subject;
 	private Date arrivalTime;
 	private String content;
-	private Vector<Microtag> tagList = new Vector<Microtag>();
+	
 	private int priority = 0;
 	private int flag = 0;
 	private String operation = "ADD";
 	
+	private String id;
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	public String getOperation() {
 		return operation;
 	}
@@ -46,12 +54,7 @@ public class PDSEmail {
 	public void setSubject(String subject) {
 		this.subject = subject;
 	}
-	public Vector<Microtag> getTagList() {
-		return tagList;
-	}
-	public void setTagList(Vector<Microtag> tagList) {
-		this.tagList = tagList;
-	}
+	
 	public Date getArrivalTime() {
 		return arrivalTime;
 	}
@@ -64,31 +67,18 @@ public class PDSEmail {
 	public void setContent(String content) {
 		this.content = content;
 	}
-	public void addTag(Microtag tag){
-		tagList.add(tag);
+	
+	@Override
+	public String toString(){
+		StringBuffer str = new StringBuffer();
+		str.append("\n");
+		str.append("id :" + this.id + "\n");
+		str.append("from :" + this.from + "\n");
+		str.append("subject :" + this.subject + "\n");
+		str.append("arrival time :" + this.arrivalTime + "\n");
+		return str.toString();
 	}
-	public void removeTag(Microtag tag){
-		int i = 0;
-		for(Microtag theTag : tagList){
-			
-			if(theTag.getName().equals(tag.getName())){
-				theTag.setOperation("REMOVE");
-				break;
-			}
-			i++;
-		}
-	}
-	public void updateTag(Microtag tag){
-		int i = 0;
-		for(Microtag theTag : tagList){
-			
-			if(theTag.getName().equals(tag.getName())){
-				theTag.setOperation("UPDATE");
-				break;
-			}
-			i++;
-		}
-		
-	}
+	
+	
 	
 }

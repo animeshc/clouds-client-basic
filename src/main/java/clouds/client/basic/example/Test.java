@@ -299,16 +299,25 @@ public class Test {
 		//PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=demo2"), "demo2", PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
 		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud.neustar.biz:12220/";
 		
-		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=alice"),"alice",XDI3Segment.create("$do"),"");
+		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=shrey"),"shrey",XDI3Segment.create("$do"),"");
+		//PDSEmail mail = pc.getEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
+		//pc.deleteEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
+		//PDSEmail mail2 = pc.getEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
+		pc.getEmailBySender("animesh.chowdhury@gmail.com");
 		PDSEmail email = new PDSEmail();
 		email.setFrom("animesh.chowdhury@gmail.com");
 		email.setArrivalTime(new Date());
 		email.setContent("This is another test email");
 		email.setSubject("Test Mail2");
 		
-		pc.saveEmail(email,null);
+		pc.saveEmail(email);
 		pc.getWholeGraph();
 		
+		pc.addEmailLabel(email.getId(), "important");
+		pc.getWholeGraph();
+		pc.removeEmailLabel(email.getId(), "important");
+		pc.getWholeGraph();
+		pc.deleteEmail(email.getId());
 		
 		//pc.getDataBucket("work");
 		String str = "";
