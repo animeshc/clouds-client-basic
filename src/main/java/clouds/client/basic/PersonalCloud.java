@@ -2986,5 +2986,34 @@ public class PersonalCloud {
 		this.delXDIStmts(delStmts, null);
 		
 	}
+	/**
+	 * 
+	 * @param label
+	 * @return
+	 */
+	public Vector<PDSEmail> getEmailByLabel(String label){
+		Vector<PDSEmail> result = new Vector<PDSEmail>();
+		String queryStmt = this.cloudNumber.toString();
+		queryStmt += "[+email]";
+		
+		MessageResult response = this.getXDIStmts(XDI3Segment.create(queryStmt), false);
+		Graph g = response.getGraph();		
+		if(g != null && g.getRootContextNode().getAllContextNodeCount() > 0){
+			System.out.println(g.toString("XDI DISPLAY", null));	
+			ContextNode root = g.getRootContextNode();
+			
+			ReadOnlyIterator<Relation> rels = root.getDeepRelations(XDI3Segment.create(queryStmt), XDI3Segment.create("+" + label));
+			
+			for(Relation r : rels){
+				XDI3Segment m = r.getTargetContextNodeXri();
+				String fqMailId = m.toString();
+				String mailUUID = fqMailId.substring(this.cloudNumber.toString().length() + new String("[+email]").length());
+				PDSEmail mail = this.getEmail(mailUUID);
+				result.add(mail);
+			}
+		}
+		
+		return result;
+	}
 
 }
