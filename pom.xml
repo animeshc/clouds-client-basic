@@ -113,15 +113,15 @@
 		<dependency>
 			<groupId>xdi2</groupId>
 			<artifactId>xdi2-client</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.2-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 				<dependency>
-			<groupId>xdi2</groupId>
-			<artifactId>xdi2-server</artifactId>
-			<version>0.1-SNAPSHOT</version>
-			<scope>compile</scope>
-		</dependency>
+					<groupId>xdi2</groupId>
+					<artifactId>xdi2-transport-http</artifactId>
+					<version>0.2-SNAPSHOT</version>
+					<scope>compile</scope>
+				</dependency>
 	</dependencies>
 
 </project>

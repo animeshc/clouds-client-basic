@@ -4,21 +4,15 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Vector;
 
 import xdi2.core.Graph;
-import xdi2.core.constants.XDIConstants;
 import xdi2.core.constants.XDILinkContractConstants;
-import xdi2.core.features.signatures.Signature;
-import xdi2.core.io.XDIWriter;
-import xdi2.core.io.XDIWriterRegistry;
 import xdi2.core.xri3.XDI3Segment;
-import clouds.client.basic.ContactInfo;
 import clouds.client.basic.PCAttribute;
 import clouds.client.basic.PCAttributeCollection;
 import clouds.client.basic.PDSEmail;
@@ -303,14 +297,14 @@ public class Test {
 		//PDSEmail mail = pc.getEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
 		//pc.deleteEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
 		//PDSEmail mail2 = pc.getEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
-		pc.getEmailBySender("animesh.chowdhury@gmail.com");
+		Vector<PDSEmail> mails = pc.getEmailBySender("animesh.chowdhury@gmail.com");
 		PDSEmail email = new PDSEmail();
 		email.setFrom("animesh.chowdhury@gmail.com");
 		email.setArrivalTime(new Date());
 		email.setContent("This is another test email");
 		email.setSubject("Test Mail2");
 		
-		pc.saveEmail(email);
+		//pc.saveEmail(email);
 		pc.getWholeGraph();
 		
 		pc.addEmailLabel(email.getId(), "important");

@@ -720,7 +720,7 @@ public class PersonalCloud {
 				XDI3Segment query = queryIter.next();
 				GetOperation getOp = message.createGetOperation(query);
 				if (isDeref) {
-					getOp.setParameter(XDI3SubSegment.create("$deref"), "true");
+					getOp.setParameter(XDI3Segment.create("$deref"), "true");
 				}
 			}
 		}
@@ -808,7 +808,7 @@ public class PersonalCloud {
 
 		GetOperation getOp = message.createGetOperation(query);
 		if (isDeref) {
-			getOp.setParameter(XDI3SubSegment.create("$deref"), "true");
+			getOp.setParameter(XDI3Segment.create("$deref"), "true");
 		}
 		if (withSignature) {
 			message = this.signMessage(message);
