@@ -33,6 +33,8 @@ import xdi2.core.Graph;
 import xdi2.core.Literal;
 import xdi2.core.Relation;
 import xdi2.core.exceptions.Xdi2ParseException;
+import xdi2.core.features.linkcontracts.PublicLinkContract;
+import xdi2.core.features.linkcontracts.RootLinkContract;
 import xdi2.core.features.nodetypes.XdiAbstractMemberUnordered;
 import xdi2.core.features.nodetypes.XdiPeerRoot;
 import xdi2.core.features.signatures.KeyPairSignature;
@@ -141,8 +143,17 @@ public class PersonalCloud {
 			}
 			pc.cloudEndpointURI = discoveryResult.getXdiEndpointUri();
 			pc.setSignaturePublicKey(discoveryResult.getSignaturePublicKey());
-			pc.linkContractAddress = linkContractAddress;
+			//pc.linkContractAddress = linkContractAddress;
 			pc.senderCloudNumber = pc.cloudNumber;
+			if(linkContractAddress.toString().equalsIgnoreCase("$do")){
+				pc.linkContractAddress = RootLinkContract.createRootLinkContractXri(pc.cloudNumber);
+			} else if (linkContractAddress.toString().equalsIgnoreCase("$public$do")) {
+				pc.linkContractAddress = PublicLinkContract.createPublicLinkContractXri(pc.cloudNumber);
+			} else {
+			
+				pc.linkContractAddress = linkContractAddress;
+			}
+			
 			System.out.println(pc.toString());
 			if (secretToken != null && !secretToken.isEmpty()) {
 				pc.secretToken = secretToken;
@@ -719,8 +730,9 @@ public class PersonalCloud {
 			while (queryIter.hasNext()) {
 				XDI3Segment query = queryIter.next();
 				GetOperation getOp = message.createGetOperation(query);
+				
 				if (isDeref) {
-					getOp.setParameter(XDI3Segment.create("$deref"), "true");
+					getOp.setParameter(GetOperation.XRI_S_PARAMETER_DEREF, true);
 				}
 			}
 		}
@@ -808,7 +820,7 @@ public class PersonalCloud {
 
 		GetOperation getOp = message.createGetOperation(query);
 		if (isDeref) {
-			getOp.setParameter(XDI3Segment.create("$deref"), "true");
+			getOp.setParameter(GetOperation.XRI_S_PARAMETER_DEREF, true);
 		}
 		if (withSignature) {
 			message = this.signMessage(message);
@@ -2721,6 +2733,11 @@ public class PersonalCloud {
 	}
 
 	public Message signMessage(Message m) {
+		
+		//if there's no secret token, then data can't be signed because private key can't be fetched
+		if(this.secretToken == null || this.secretToken.isEmpty()){
+			return m;
+		}
 		Signature<?, ?> signature = null;
 
 		Key k = null;
