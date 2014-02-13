@@ -718,7 +718,9 @@ public class PersonalCloud {
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
 		Message message = messageEnvelope.createMessage(senderCloudNumber, 0);
-		
+		if(linkContractAddress != null && linkContractAddress.toString().equals("$do")){
+			linkContractAddress = RootLinkContract.createRootLinkContractXri(cloudNumber);
+		}
 		message.setLinkContractXri(linkContractAddress);
 		if (secretToken != null) {
 			message.setSecretToken(secretToken);
@@ -812,6 +814,9 @@ public class PersonalCloud {
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
 		Message message = messageEnvelope.createMessage(senderCloudNumber, 0);
+		if(linkContractAddress != null && linkContractAddress.toString().equals("$do")){
+			linkContractAddress = RootLinkContract.createRootLinkContractXri(cloudNumber);
+		}
 		message.setLinkContractXri(linkContractAddress);
 		if (secretToken != null) {
 			message.setSecretToken(secretToken);
@@ -2224,6 +2229,11 @@ public class PersonalCloud {
 			Relation requestingPartyCloudnameRel = responseRootContext
 					.getDeepRelation(XDI3Segment.create(templateOwnerInumber),
 							XDI3Segment.create("$is$ref"));
+			if(requestingPartyCloudnameRel == null){
+				requestingPartyCloudnameRel = responseRootContext
+						.getDeepRelation(XDI3Segment.create(""),
+								XDI3Segment.create("$is$ref"));
+			}
 			String requestingPartyCloudName = requestingPartyCloudnameRel
 					.getTargetContextNodeXri().toString();
 
@@ -2734,10 +2744,14 @@ public class PersonalCloud {
 
 	public Message signMessage(Message m) {
 		
+		
+		
 		//if there's no secret token, then data can't be signed because private key can't be fetched
+		/*
 		if(this.secretToken == null || this.secretToken.isEmpty()){
 			return m;
 		}
+				
 		Signature<?, ?> signature = null;
 
 		Key k = null;
@@ -2781,7 +2795,7 @@ public class PersonalCloud {
 				gse.printStackTrace();
 			}
 		}
-
+*/
 		return m;
 	}
 	/**
