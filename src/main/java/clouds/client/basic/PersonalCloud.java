@@ -2538,7 +2538,7 @@ public class PersonalCloud {
 					+ address);
 
 		XDI3Segment privKeyAddress = XDI3Segment
-				.create("$msg$sig$keypair<$private><$key>&");
+				.create(cloudNumber + "$msg$sig$keypair<$private><$key>&");
 
 		MessageResult result = getXDIStmts(privKeyAddress, true);
 		MemoryGraph response = (MemoryGraph) result.getGraph();
@@ -2625,7 +2625,7 @@ public class PersonalCloud {
 						XDI3Segment.create(fromCloudnumber), "",
 						XDI3Segment.create("$public$do"), null);
 				XDI3Segment pubKeyAddress = XDI3Segment
-						.create("$msg$sig$keypair<$public><$key>&");
+						.create(fromCloudnumber + "$msg$sig$keypair<$public><$key>&");
 
 				MessageResult result = fromPC.getXDIStmtsNoSig(pubKeyAddress,
 						true);
@@ -2747,7 +2747,7 @@ public class PersonalCloud {
 		
 		
 		//if there's no secret token, then data can't be signed because private key can't be fetched
-		/*
+		
 		if(this.secretToken == null || this.secretToken.isEmpty()){
 			return m;
 		}
@@ -2762,7 +2762,7 @@ public class PersonalCloud {
 					+ m.getContextNode());
 
 		XDI3Segment privKeyAddress = XDI3Segment
-				.create("$msg$sig$keypair<$private><$key>&");
+				.create(cloudNumber + "$msg$sig$keypair<$private><$key>&");
 
 		MessageResult result = getXDIStmtsNoSig(privKeyAddress, true);
 		MemoryGraph response = (MemoryGraph) result.getGraph();
@@ -2795,7 +2795,7 @@ public class PersonalCloud {
 				gse.printStackTrace();
 			}
 		}
-*/
+
 		return m;
 	}
 	/**
