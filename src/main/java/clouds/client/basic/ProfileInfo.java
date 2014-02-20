@@ -4,8 +4,21 @@ import xdi2.core.xri3.XDI3Segment;
 
 public class ProfileInfo implements PersonalCloudEntity {
 
+	private String cloudName;
+	private String cloudNumber;
+	private String profileName;
+	private String relativeXDIAddress;
+	private String name;
+	private String organization;
+	private String title;
+	private String webAddress;
+	private byte[] photo;
+	private String oneLiner;
 	private String email;
 	private String phone;
+	private String profileContextId;
+	private boolean isDefaultProfile = false;
+	private String respectConnectXDIMessage;
 	
 	public XDI3Segment getAddress(PersonalCloud pc) {
 		
@@ -37,6 +50,114 @@ public class ProfileInfo implements PersonalCloudEntity {
 	@Override
 	public String toString() {
 
-		return null;
+		StringBuffer str = new StringBuffer();
+		str.append("Email:" + email).append(",XDI Context:" + relativeXDIAddress);
+		return str.toString();
 	}
+
+	public String getCloudName() {
+		return cloudName;
+	}
+
+	public void setCloudName(String cloudName) {
+		this.cloudName = cloudName;
+	}
+
+	public String getCloudNumber() {
+		return cloudNumber;
+	}
+
+	public void setCloudNumber(String cloudNumber) {
+		this.cloudNumber = cloudNumber;
+	}
+
+	public String getProfileName() {
+		return profileName;
+	}
+
+	public void setProfileName(String profileName) {
+		this.profileName = profileName;
+	}
+
+	public String getRelativeXDIAddress() {
+		return relativeXDIAddress;
+	}
+
+	public void setRelativeXDIAddress(String relativeXDIAddress) {
+		this.relativeXDIAddress = relativeXDIAddress;
+	}
+
+	public String getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(String organization) {
+		this.organization = organization;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getWebAddress() {
+		return webAddress;
+	}
+
+	public void setWebAddress(String webAddress) {
+		this.webAddress = webAddress;
+	}
+
+	public byte[] getPhoto() {
+		return photo;
+	}
+
+	public void setPhoto(byte[] photo) {
+		this.photo = photo;
+	}
+
+	public String getOneLiner() {
+		return oneLiner;
+	}
+
+	public void setOneLiner(String oneLiner) {
+		this.oneLiner = oneLiner;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getProfileContextId() {
+		return profileContextId;
+	}
+
+	public void setProfileContextId(String profileContextId) {
+		this.profileContextId = profileContextId;
+	}
+
+	public boolean isDefault() {
+		return isDefaultProfile;
+	}
+
+	public void setDefault(boolean isDefault) {
+		this.isDefaultProfile = isDefault;
+	}
+
+	public String getRespectConnectXDIMessage() {
+		return respectConnectXDIMessage;
+	}
+
+	public void setRespectConnectXDIMessage(String respectConnectXDIMessage) {
+		this.respectConnectXDIMessage = respectConnectXDIMessage;
+	}
+	
+	
 }

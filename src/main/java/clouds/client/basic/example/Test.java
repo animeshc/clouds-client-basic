@@ -35,7 +35,7 @@ public class Test {
 		profileInfo.setEmail(email);
 		profileInfo.setPhone(phone);
 
-		cloud.saveProfileInfo(profileInfo);		
+		//cloud.saveProfileInfo(profileInfo);		
 	}
 	public static void testMyOwnPersonalCloud(String name , String passwd) {
 
@@ -113,7 +113,7 @@ public class Test {
 				ProfileInfo pc1Prof = new ProfileInfo();
 				 pc1Prof.setEmail("animesh.chowdhury@neustar.biz");
 				 pc1Prof.setPhone("1-240-620-4205");
-				 pc1.saveProfileInfo(pc1Prof);
+				 pc1.createNewProfile(pc1Prof);
 				pc1.allowAccess(pc1Prof, XDILinkContractConstants.XRI_S_GET,
 				XDI3Segment.create("=markus"));
 				Graph pc1Graph = pc1.getWholeGraph();
@@ -151,7 +151,7 @@ public class Test {
 				 PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "");
 		String linkContract = pc1.getCloudNumber().toString() + "$do";
 		pc2.setLinkContractAddress(XDI3Segment.create(linkContract));
-		System.out.println("Shared PC's phone:" + pc2.getProfileInfo().getPhone());
+		//System.out.println("Shared PC's phone:" + pc2.getProfileInfo().getPhone());
 		
 	}
 	public static void getAllCollections(){
@@ -291,55 +291,82 @@ public class Test {
 //		
 //		pc_animesh2.approveAccess(XDI3Segment.create(reqURI),null);
 		//PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=demo2"), "demo2", PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
-		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud.neustar.biz:12220/";
+		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
 		
-		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=shrey"),"shrey",XDI3Segment.create("$do"),"");
+		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=animesh.test"),"animesh",XDI3Segment.create("$do"),"");
+		
+//		ProfileInfo profile1 = new ProfileInfo() ; //pc.getProfileInfo("+home");
+//		profile1.setCloudName("=animesh.test");
+//		profile1.setEmail("animesh.test@someplace.somewhere");
+//		profile1.setProfileName("Home Contact");
+//		profile1.setName("Animesh Test");
+//		profile1.setPhone("bbb-bbb-bbbb");
+//		profile1.setRelativeXDIAddress("+newProfile1");
+//		String connect = pc.createRespectConnectRequest("+home");
+//		profile1.setRespectConnectXDIMessage(connect);
+//		pc.createNewProfile(profile1);
+//		//pc.deleteProfile("+work");
+//pc.getWholeGraph();
+		//System.out.println(pc.createRespectConnectRequest("+home").toString());
+//		pc.getProfileInfo("+home");
+//		profile1.setName("John Doe");
+//		profile1.setPhone("666-666-6666");
+//		String connect = pc.createRespectConnectRequest("+home");
+//		profile1.setRespectConnectXDIMessage(connect);
+//		pc.updateProfileInfo(profile1);
+		ProfileInfo prof1 = pc.getProfileInfo("+newProfile1");
+		if(prof1 != null){
+		System.out.println(prof1.toString());
+		} else {
+			System.out.println("Profile NOT FOUND!");
+		}
+		//pc.deleteProfile("[+profile]!:uuid:79606848-7c7e-4bcd-84e6-5179fbd6d0a1");
 		//PDSEmail mail = pc.getEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
 		//pc.deleteEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
 		//PDSEmail mail2 = pc.getEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
-		Vector<PDSEmail> mails = pc.getEmailBySender("animesh.chowdhury@gmail.com");
-		PDSEmail email = new PDSEmail();
-		email.setFrom("animesh.chowdhury@gmail.com");
-		email.setArrivalTime(new Date());
-		email.setContent("This is another test email");
-		email.setSubject("Test Mail2");
-		
-		//pc.saveEmail(email);
-		pc.getWholeGraph();
-		
-		pc.addEmailLabel(email.getId(), "important");
-		pc.getWholeGraph();
-		pc.removeEmailLabel(email.getId(), "important");
-		pc.getWholeGraph();
-		pc.deleteEmail(email.getId());
-		
-		//pc.getDataBucket("work");
-		String str = "";
-		if(pc == null){
-			System.exit(-1);
-		}
-		
-		FileInputStream fin = null;
-		try {
-			fin = new FileInputStream(args[1]);		
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		DataInputStream din  = new DataInputStream(fin);
-	     BufferedReader d
-         = new BufferedReader(new InputStreamReader(din));
-
-		try {
-			String line ;
-			while((line = d.readLine()) != null){
-				str += line;
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Graph g = pc.signGraph(str, "[=]!:uuid:0707f2ff-4266-9f14-0707-f2ff42669f14");
+//		Vector<PDSEmail> mails = pc.getEmailBySender("animesh.chowdhury@gmail.com");
+//		PDSEmail email = new PDSEmail();
+//		email.setFrom("animesh.chowdhury@gmail.com");
+//		email.setArrivalTime(new Date());
+//		email.setContent("This is another test email");
+//		email.setSubject("Test Mail2");
+//		
+//		//pc.saveEmail(email);
+//		pc.getWholeGraph();
+//		
+//		pc.addEmailLabel(email.getId(), "important");
+//		pc.getWholeGraph();
+//		pc.removeEmailLabel(email.getId(), "important");
+//		pc.getWholeGraph();
+//		pc.deleteEmail(email.getId());
+//		
+//		//pc.getDataBucket("work");
+//		String str = "";
+//		if(pc == null){
+//			System.exit(-1);
+//		}
+//		
+//		FileInputStream fin = null;
+//		try {
+//			fin = new FileInputStream(args[1]);		
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		DataInputStream din  = new DataInputStream(fin);
+//	     BufferedReader d
+//         = new BufferedReader(new InputStreamReader(din));
+//
+//		try {
+//			String line ;
+//			while((line = d.readLine()) != null){
+//				str += line;
+//			}
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		Graph g = pc.signGraph(str, "[=]!:uuid:0707f2ff-4266-9f14-0707-f2ff42669f14");
 //		Graph g = pc.getWholeGraph();
 //		g = pc.signGraph(Signature.getNormalizedSerialization(g.getRootContextNode()), "");
 //		StringWriter writer = new StringWriter();
