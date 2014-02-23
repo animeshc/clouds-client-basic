@@ -158,19 +158,19 @@ public class PersonalCloud {
 			System.out.println(pc.toString());
 			if (secretToken != null && !secretToken.isEmpty()) {
 				pc.secretToken = secretToken;
-
-				XDI3Segment authorityNodeAddr = XDI3Segment
-						.create(pc.cloudNumber.toString());
-
-				MessageResult result = pc.getXDIStmtsNoSig(authorityNodeAddr,
-						false);
-				MemoryGraph response = (MemoryGraph) result.getGraph();
-				if (response == null
-						|| response.getRootContextNode() == null
-						|| response.getRootContextNode()
-								.getAllContextNodeCount() == 0) {
-					return null;
-				}
+				//TBD : find out less costly ways of making sure that the secret token is good
+//				XDI3Segment authorityNodeAddr = XDI3Segment
+//						.create(pc.cloudNumber.toString());
+//
+//				MessageResult result = pc.getXDIStmtsNoSig(authorityNodeAddr,
+//						false);
+//				MemoryGraph response = (MemoryGraph) result.getGraph();
+//				if (response == null
+//						|| response.getRootContextNode() == null
+//						|| response.getRootContextNode()
+//								.getAllContextNodeCount() == 0) {
+//					return null;
+//				}
 
 			}
 			if(cloudNameOrCloudNumber.toString().startsWith("=") || cloudNameOrCloudNumber.toString().startsWith("@") || cloudNameOrCloudNumber.toString().startsWith("*")){
@@ -375,6 +375,15 @@ public class PersonalCloud {
 			profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
 					+ "<+name>&/&/\"" + profileInfo.getName() + "\""));
 		}
+		
+		//for event notifications
+		profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
+						+ "<+flag+all+event+notification>&/&/\"" + "Y" + "\""));
+		profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
+				+ "<+flag+major+event+notification>&/&/\"" + "N" + "\""));
+		profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
+				+ "<+filter+event+notification>&/&/\"" + "NONE" + "\""));
+		
 		if(profileInfo.getRelativeXDIAddress() != null && !profileInfo.getRelativeXDIAddress().isEmpty()) {
 			//create the relative address as a context with $rep to the profile context
 			profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString()  +  profileInfo.getRelativeXDIAddress() + "/$rep/" + cloudNumber.toString() + "[+profile]" + uuid 
@@ -647,19 +656,20 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(this.senderCloudNumber, 0);
 		message.setLinkContractXri(linkContractAddress);
 		//System.out.println("setXDIStmts 2");
 		if (secretToken != null) {
 			message.setSecretToken(secretToken);
+			message = this.signMessage(message);
 		}
-		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
+		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(this.cloudNumber));
 
 		if (XDIStmts != null && XDIStmts.size() > 0) {
 			message.createSetOperation(XDIStmts.iterator());
 		}
 
-		message = this.signMessage(message);
+		
 		System.out.println();
 		// System.out.println("Message :\n" + messageEnvelope + "\n");
 		try {
@@ -2224,6 +2234,7 @@ public class PersonalCloud {
 			Hashtable<String, String> requestedFields) {
 
 		String respondingPartyCloudNumber = null;
+		ArrayList<XDI3Segment> getDataFields = new ArrayList<XDI3Segment>();
 		try {
 
 			respondingPartyCloudNumber = URLDecoder.decode(
@@ -2275,6 +2286,10 @@ public class PersonalCloud {
 				if (r.getArcXri().toString().equals("$set{$do}")) {
 					lcTemplateAddress = r.getTargetContextNodeXri().toString();
 					System.out.println(r.getTargetContextNodeXri());
+				} else if (r.getArcXri().toString().equals("$get")) {
+					if (r.getTargetContextNodeXri().toString().contains("{$to}")) {
+						getDataFields.add(r.getTargetContextNodeXri());
+					}
 				}
 
 			}
@@ -2282,8 +2297,8 @@ public class PersonalCloud {
 				System.out.println("No LC template address provided");
 				return false;
 			}
-			String meta_link_contract = "{$to}" + templateOwnerInumber
-					+ "{$from}" + templateOwnerInumber + "+registration$do";
+//			String meta_link_contract = "{$to}" + templateOwnerInumber
+//					+ "{$from}" + templateOwnerInumber + "+registration$do";
 
 			PersonalCloud remoteCloud = PersonalCloud.open(
 					XDI3Segment.create(templateOwnerInumber), this.cloudNumber,
@@ -2313,14 +2328,14 @@ public class PersonalCloud {
 			ContextNode responseRootContext = responseGraph
 					.getRootContextNode();
 
-			ArrayList<XDI3Segment> getDataFields = new ArrayList<XDI3Segment>();
+
 
 			ReadOnlyIterator<Relation> getRelations = responseRootContext
 					.getAllRelations();
 			for (Relation r : getRelations) {
 				if (r.getArcXri().toString().equals("$get")) {
 
-					getDataFields.add(r.getTargetContextNodeXri());
+					//getDataFields.add(r.getTargetContextNodeXri());
 					// System.out.println(r.getTargetContextNodeXri());
 
 				}
@@ -2392,7 +2407,8 @@ public class PersonalCloud {
 		String xdiResponseValues = new String();
 
 		Graph g1 = MemoryGraphFactory.getInstance().openGraph();
-
+		ArrayList<XDI3Statement> setStatementsForRemote = new ArrayList<XDI3Statement>();
+		
 		ArrayList<XDI3Statement> setStatements = new ArrayList<XDI3Statement>();
 		String isPlusstmt = new String();
 		isPlusstmt += respondingPartyCloudNumber;
@@ -2414,7 +2430,8 @@ public class PersonalCloud {
 		policyStmt += "+registration$do$if$and/$true/({$from}/$is/"
 				+ relyingPartyCloudNumber + ")";
 		setStatements.add(XDI3Statement.create(policyStmt));
-
+		
+		
 		policyStmt = new String();
 		policyStmt += respondingPartyCloudNumber;
 		policyStmt += "$to";
@@ -2423,6 +2440,8 @@ public class PersonalCloud {
 		policyStmt += relyingPartyCloudNumber;
 		policyStmt += "+registration$do$if$and/$true/({$msg}<$sig><$valid>&/&/true)";
 		setStatements.add(XDI3Statement.create(policyStmt));
+		
+		
 
 		for (int i = 0; (selectedValues != null) && (i < selectedValues.length); i++) {
 			String value = selectedValues[i];
@@ -2443,12 +2462,24 @@ public class PersonalCloud {
 			stmt += "+registration$do/$get/";
 			stmt += addressPart;
 
-			System.out.println("Set statements :" + stmt);
+			//System.out.println("Set statements :" + stmt);
 			setStatements.add(XDI3Statement.create(stmt));
+			setStatementsForRemote.add(XDI3Statement.create(stmt));
 		}
-		System.out.println("All Set statements :" + setStatements);
+		if((selectedValues == null) || selectedValues.length == 0){
+			String stmt = new String();
+			stmt += respondingPartyCloudNumber;
+			stmt += "$to";
+			stmt += relyingPartyCloudNumber;
+			stmt += "$from";
+			stmt += relyingPartyCloudNumber;
+			stmt += "+registration$do/$get/(";
+			stmt += this.cloudNumber + "/$is$ref/" + this.getCloudName(cloudNumber.toString()) + ")";
+			setStatementsForRemote.add(XDI3Statement.create(stmt));
+		}
+		//System.out.println("All Set statements :" + setStatements);
 		MessageResult setResponse = this.setXDIStmts(setStatements);
-		System.out.println("Set response : " + setResponse);
+		//System.out.println("Set response : " + setResponse);
 
 		String targetSegment = new String();
 		targetSegment += respondingPartyCloudNumber;
@@ -2493,6 +2524,18 @@ public class PersonalCloud {
 				respondingPartyCloudNumber);
 		System.out.println("\n\nConnect Response: \n"
 				+ g.toString("XDI DISPLAY", null) + "\n\n");
+		
+//		String meta_link_contract = this.cloudNumber.toString() + "$to" + relyingPartyCloudNumber
+//		+ "$from" + relyingPartyCloudNumber + "+registration$do";
+		String meta_link_contract = relyingPartyCloudNumber  +"$to$anon$from$public+registration$do";
+		
+		PersonalCloud remoteCloud = PersonalCloud.open(
+		XDI3Segment.create(relyingPartyCloudNumber), this.cloudNumber,
+		XDI3Segment.create(meta_link_contract), "");
+
+		MessageResult remoteSetResponse = remoteCloud.setXDIStmts(setStatementsForRemote);
+		System.out.println("\n\n Remote Set response for setting LCs using meta LC :\n " + remoteSetResponse + "\n\n");
+
 		return Signature.getNormalizedSerialization(g.getRootContextNode());
 	}
 
@@ -2501,6 +2544,7 @@ public class PersonalCloud {
 		boolean result = false;
 		MemoryJSONGraphFactory graphFactory = new MemoryJSONGraphFactory();
 		String templateOwnerInumber = null;
+		String lcTemplateAddress = null;
 		try {
 			Graph g = graphFactory.parseGraph(connectRequest);
 			// get remote cloud number
@@ -2524,13 +2568,13 @@ public class PersonalCloud {
 			// get the address of the link contract template
 			// $set{$do}
 
-			String lcTemplateAddress = null;
+			
 
 			ReadOnlyIterator<Relation> allRelations = c.getAllRelations(); // g.getDeepRelations(XDI3Segment.create(templateOwnerInumber),XDI3Segment.create("$get"));
 			for (Relation r : allRelations) {
 				if (r.getArcXri().toString().equals("$set{$do}")) {
 					lcTemplateAddress = r.getTargetContextNodeXri().toString();
-					System.out.println(r.getTargetContextNodeXri());
+					//System.out.println(r.getTargetContextNodeXri());
 				}
 
 			}
@@ -2542,24 +2586,67 @@ public class PersonalCloud {
 			io.printStackTrace();
 			return result;
 		}
+		
+		//=================================
+		PersonalCloud remoteCloud = PersonalCloud.open(
+				XDI3Segment.create(templateOwnerInumber), this.cloudNumber,
+				XDI3Segment.create("$public$do"), "");
+		ArrayList<XDI3Segment> querySegments = new ArrayList<XDI3Segment>();
 
-		String isPlusstmt = new String();
-		isPlusstmt += this.cloudNumber;
-		isPlusstmt += "$to";
-		isPlusstmt += templateOwnerInumber;
-		isPlusstmt += "$from";
-		isPlusstmt += templateOwnerInumber;
-		isPlusstmt += "+registration$do";
+		querySegments.add(XDI3Segment.create(lcTemplateAddress));
 
-		MessageResult responseFromLocalCloud = this.getXDIStmts(XDI3Segment.create(isPlusstmt), false); 
+		ArrayList<XDI3Statement> queryStmts = new ArrayList<XDI3Statement>();
+		MessageResult responseFromRemoteCloud = null;
+
+		try {
+			responseFromRemoteCloud = remoteCloud.sendQueries(
+					querySegments, queryStmts, false);
+		} catch (Exception ex) {
+			return false;
+		}
+		if (responseFromRemoteCloud == null) {
+			return false;
+		}
+
+		String lcInstanceAddress = new String();
+		lcInstanceAddress += this.cloudNumber;
+		lcInstanceAddress += "$to";
+		lcInstanceAddress += templateOwnerInumber;
+		lcInstanceAddress += "$from";
+		lcInstanceAddress += templateOwnerInumber;
+		lcInstanceAddress += "+registration$do";
+		
+		queryStmts = new ArrayList<XDI3Statement>();
+		
+		Graph responseGraph2 = responseFromRemoteCloud.getGraph();
+		ContextNode responseRootContext2 = responseGraph2
+				.getRootContextNode();
+		ReadOnlyIterator<Relation> getRelations = responseRootContext2
+				.getAllRelations();
+		for (Relation r : getRelations) {
+			if (r.getArcXri().toString().equals("$get")) {
+				String lcAccessStmt = lcInstanceAddress + "/$get/";
+				String targetContextNode = r.getTargetContextNodeXri().toString();
+				targetContextNode = targetContextNode.replace("{$to}", this.cloudNumber.toString());
+				lcAccessStmt += targetContextNode;
+				queryStmts.add(XDI3Statement.create(lcAccessStmt));
+			}
+
+		}
+		
+		//==============
+
+		
+
+		MessageResult responseFromLocalCloud = this.sendQueries(null,queryStmts,false); 
 
 		if (responseFromLocalCloud != null) {
 			Graph responseGraph = responseFromLocalCloud.getGraph();
 			ContextNode responseRootContext = responseGraph
 					.getRootContextNode();
-			System.out.println("\n\nLink Contract exists check\n\n"
-					+ responseGraph.toString());
-			if (responseRootContext.getContextNodeCount() > 1) {
+//			System.out.println("\n\nLink Contract exists check\n\n"
+//					+ responseGraph.toString());
+			if (!responseGraph.toString().contains("<$false>") && (responseRootContext.getAllLiteralCount() >= queryStmts.size())) {
 				result = true;
 			}
 		}
@@ -3165,20 +3252,25 @@ public class PersonalCloud {
 //		}
 		ArrayList<XDI3Statement> setStmts = new ArrayList<XDI3Statement>();
 		//build and install link contract template
-		setStmts.add(XDI3Statement.create( this.cloudNumber.toString() + "{$from}" + this.cloudNumber.toString() + "+registration$do/$get/{$to}"  + profileName));
+		setStmts.add(XDI3Statement.create( "{$from}" + this.cloudNumber.toString() + "+registration{$do}/$get/{$to}"  + profileName));
 		//link contract template policy requiring the requester to be this cloud
-		setStmts.add(XDI3Statement.create( this.cloudNumber.toString()  +"{$from}" + this.cloudNumber.toString() +  "+registration$do$if$and/$true/({$from}/$is/" + this.getCloudNumber().toString() + ")"));
+		setStmts.add(XDI3Statement.create( "{$from}" + this.cloudNumber.toString() +  "+registration{$do}$if$and/$true/({$from}/$is/" + this.getCloudNumber().toString() + ")"));
 		//link contract template policy requiring the request message to be signed
-		setStmts.add(XDI3Statement.create(this.cloudNumber.toString()  + "{$from}" + this.cloudNumber.toString() +  "+registration$do$if$and/$true/({$msg}<$sig><$valid>&/&/true)"));
+		setStmts.add(XDI3Statement.create("{$from}" + this.cloudNumber.toString() +  "+registration{$do}$if$and/$true/({$msg}<$sig><$valid>&/&/true)"));
 		
 		//public link contract for link contract template
 		
-		setStmts.add(XDI3Statement.create(cloudNumber.toString()  +"$to$anon$from$public$do" +"/" +  "$get" + "/" +   this.cloudNumber.toString() + "{$from}" + this.cloudNumber.toString() + "+registration$do")); 
-				
+		setStmts.add(XDI3Statement.create(cloudNumber.toString()  +"$to$anon$from$public$do" +"/" +  "$get" + "/" +  "{$from}" + this.cloudNumber.toString() + "+registration{$do}")); 
+
+		//public link contract for link contract template
+		
+		//setStmts.add(XDI3Statement.create(cloudNumber.toString()  +"$to$anon$from$public+registration$do" +"/" +  "$set{$do}/"  +"{$to}$to" + this.cloudNumber.toString() +  "$from" + this.cloudNumber.toString() + "+registration$do")); 
+		setStmts.add(XDI3Statement.create(cloudNumber.toString()  +"$to$anon$from$public+registration$do" +"/" +  "$all/"));
+
 		//meta link contract for the link contract template
-		setStmts.add(XDI3Statement.create(this.cloudNumber.toString()  + "{$to}" + "+registration$do/$set{$do}/{$to}" +  profileName));
-//		//meta link contract template policy requiring the instance message to be signed
-//		setStmts.add(XDI3Statement.create(this.cloudNumber.toString()  + "{$to}" + this.cloudNumber.toString() + "$from" + this.cloudNumber.toString()  + "+registration$do$if/$true/({$msg}<$sig><$valid>&/&/true)"));
+		setStmts.add(XDI3Statement.create( "{$to}" + this.cloudNumber.toString() + "$from" + this.cloudNumber.toString() + "+registration$do/$set{$do}/" + "{$from}" +  this.cloudNumber.toString() +  "+registration{$do}"));
+		// TBD : meta link contract template policy requiring the instance message to be signed
+//		setStmts.add(XDI3Statement.create( "{$to}" + this.cloudNumber.toString() + "$from" + this.cloudNumber.toString() + "+registration$do$if/$true/({$msg}<$sig><$valid>&/&/true)"));
 		
 		this.setXDIStmts(setStmts);
 		
@@ -3192,7 +3284,7 @@ public class PersonalCloud {
 		connectReqGraph.setStatement(stmt);
 		stmt = XDI3Statement.create(this.cloudNumber.toString() + "[$msg]#0$do/$get/{$to}" +  profileName );
 		connectReqGraph.setStatement(stmt);
-		stmt = XDI3Statement.create(this.cloudNumber.toString() + "[$msg]#0$do/$set{$do}/" + this.cloudNumber.toString() +  "{$from}" + this.cloudNumber.toString() +  "+registration$do");
+		stmt = XDI3Statement.create(this.cloudNumber.toString() + "[$msg]#0$do/$set{$do}/" + "{$from}" + this.cloudNumber.toString() +  "+registration{$do}");
 		connectReqGraph.setStatement(stmt);
 		
 //		MessageEnvelope messageEnvelope = new MessageEnvelope();
@@ -3203,6 +3295,68 @@ public class PersonalCloud {
 		Graph signedGraph = this.signGraph(connectReqGraph.toString(), this.cloudNumber.toString() + "[$msg]#0");
 		
 		return signedGraph.toString("XDI/JSON",null);
+	}
+	
+	public void getListofLCs(Hashtable<String,String> youHaveGivenToSomeone, Hashtable<String,String> someoneGaveItToYou){
+		Graph g = this.getWholeGraph();
+		ContextNode root = g.getRootContextNode();
+		ReadOnlyIterator<Relation> allRelations = root.getAllRelations();
+		for(Relation r : allRelations){
+			String arcName = r.getArcXri().toString();
+			if(arcName.equals("$get") || arcName.equals("$set") ){
+				String LCAddress = r.getContextNode().toString();
+				if (LCAddress.contains("+registration$do") && LCAddress.contains("$to") && LCAddress.contains("$from")) {
+					
+					String authorizingParty = LCAddress.substring(0, LCAddress.indexOf("$to"));
+					String requestingParty = LCAddress.substring(LCAddress.indexOf("$to") + 3, LCAddress.indexOf("$from"));
+					if(authorizingParty.equalsIgnoreCase(this.cloudNumber.toString())){
+						if(requestingParty != null && !requestingParty.isEmpty() && youHaveGivenToSomeone.get(requestingParty) == null){
+							youHaveGivenToSomeone.put(requestingParty, getCloudName(requestingParty));
+						}
+					} else {
+						if(authorizingParty != null && !authorizingParty.isEmpty() && someoneGaveItToYou.get(authorizingParty) == null) {
+							someoneGaveItToYou.put(authorizingParty, getCloudName(authorizingParty));
+						}
+					}
+				}
+			}
+		}
+	}
+	public String getCloudName(String cloudNumber){
+		
+		PersonalCloud remoteCloud = PersonalCloud.open(
+				XDI3Segment.create(cloudNumber), this.cloudNumber,
+				XDI3Segment.create("$public$do"), "");
+		ArrayList<XDI3Statement> queryStmts = new ArrayList<XDI3Statement>();
+		queryStmts.add(XDI3Statement.create(cloudNumber
+				+ "/$is$ref/{}"));
+		MessageResult responseFromRemoteCloud = null;
+
+		try {
+			responseFromRemoteCloud = remoteCloud.sendQueries(
+					null, queryStmts, false);
+		} catch (Exception ex) {
+			return "";
+		}
+		if (responseFromRemoteCloud == null) {
+			return "";
+		}
+
+		Graph responseGraph = responseFromRemoteCloud.getGraph();
+		ContextNode responseRootContext = responseGraph
+				.getRootContextNode();
+		Relation requestingPartyCloudnameRel = responseRootContext
+				.getDeepRelation(XDI3Segment.create(cloudNumber),
+						XDI3Segment.create("$is$ref"));
+		if(requestingPartyCloudnameRel == null){
+			requestingPartyCloudnameRel = responseRootContext
+					.getDeepRelation(XDI3Segment.create(""),
+							XDI3Segment.create("$is$ref"));
+		}
+		String cloudName = requestingPartyCloudnameRel
+				.getTargetContextNodeXri().toString();
+
+		return cloudName;
 	}
 
 }

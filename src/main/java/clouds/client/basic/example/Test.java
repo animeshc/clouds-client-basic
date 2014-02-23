@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import xdi2.core.Graph;
@@ -293,7 +294,10 @@ public class Test {
 		//PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=demo2"), "demo2", PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
 		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
 		
-		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=animesh.test"),"animesh",XDI3Segment.create("$do"),"");
+		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=alice"),"alice",XDI3Segment.create("$do"),"");
+		Hashtable<String,String> youHaveGivenToSomeone = new Hashtable<String,String>();
+		Hashtable<String,String> someoneGaveItToYou = new Hashtable<String,String>();
+		pc.getListofLCs(youHaveGivenToSomeone, someoneGaveItToYou);
 		
 //		ProfileInfo profile1 = new ProfileInfo() ; //pc.getProfileInfo("+home");
 //		profile1.setCloudName("=animesh.test");
