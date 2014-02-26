@@ -377,12 +377,12 @@ public class PersonalCloud {
 		}
 		
 		//for event notifications
-		profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
-						+ "<+flag+all+event+notification>&/&/\"" + "Y" + "\""));
-		profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
-				+ "<+flag+major+event+notification>&/&/\"" + "N" + "\""));
-		profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
-				+ "<+filter+event+notification>&/&/\"" + "NONE" + "\""));
+//		profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
+//						+ "<+flag+all+event+notification>&/&/" + "true"));
+//		profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
+//				+ "<+flag+major+event+notification>&/&/" + "false" ));
+//		profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString() + "[+profile]" + uuid
+//				+ "<+filter+event+notification>&/&/" + "false" + ""));
 		
 		if(profileInfo.getRelativeXDIAddress() != null && !profileInfo.getRelativeXDIAddress().isEmpty()) {
 			//create the relative address as a context with $rep to the profile context

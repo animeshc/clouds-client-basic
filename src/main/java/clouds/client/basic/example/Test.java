@@ -294,7 +294,7 @@ public class Test {
 		//PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=demo2"), "demo2", PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
 		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
 		
-		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=alice"),"alice",XDI3Segment.create("$do"),"");
+		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=will.test"),"willtest",XDI3Segment.create("$do"),"");
 		Hashtable<String,String> youHaveGivenToSomeone = new Hashtable<String,String>();
 		Hashtable<String,String> someoneGaveItToYou = new Hashtable<String,String>();
 		pc.getListofLCs(youHaveGivenToSomeone, someoneGaveItToYou);
@@ -318,7 +318,7 @@ public class Test {
 //		String connect = pc.createRespectConnectRequest("+home");
 //		profile1.setRespectConnectXDIMessage(connect);
 //		pc.updateProfileInfo(profile1);
-		ProfileInfo prof1 = pc.getProfileInfo("+newProfile1");
+		ProfileInfo prof1 = pc.getProfileInfo("+willtestprofile1");
 		if(prof1 != null){
 		System.out.println(prof1.toString());
 		} else {
