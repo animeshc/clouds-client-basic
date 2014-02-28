@@ -824,8 +824,15 @@ public class PersonalCloud {
 	}
 
 	public MessageResult sendQueriesToPeerCloud(PersonalCloud peerCloud , ArrayList<XDI3Segment> queries,
-			ArrayList<XDI3Statement> queryStmts, boolean isDeref ){
-		XDIClient xdiClient = new XDIHttpClient(peerCloud.cloudEndpointURI);
+			ArrayList<XDI3Statement> queryStmts, String targetEndpointURI ){
+		
+		boolean isDeref = false;
+		XDIClient xdiClient = null;
+		if(targetEndpointURI == null || targetEndpointURI.isEmpty()){
+		xdiClient = new XDIHttpClient(peerCloud.cloudEndpointURI);
+		} else {
+			xdiClient = new XDIHttpClient(targetEndpointURI);
+		}
 
 		// prepare message envelope
 

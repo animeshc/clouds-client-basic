@@ -301,12 +301,15 @@ public class Test {
 //		Hashtable<String,String> someoneGaveItToYou = new Hashtable<String,String>();
 //		pc.getListofLCs(youHaveGivenToSomeone, someoneGaveItToYou);
 		
+		System.setProperty("https.protocols", "TLSv1");
 		//point to the XDI discovery service
 		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
 
 		//open the personal cloud for test CSP
 		PersonalCloud CSPPersonalCloud = PersonalCloud.open(XDI3Segment.create("@testcsp"),"whitelabel123",XDI3Segment.create("$do"),"");
 
+		 String registrationServiceURI = "https://registration-dev.respectnetwork.net/registration";
+			 
 		PersonalCloud RNPersonalCloud = null; 
 		
 		if (CSPPersonalCloud != null){
@@ -315,12 +318,12 @@ public class Test {
 
 		RNPersonalCloud = PersonalCloud.open(XDI3Segment.create("@respect"), CSPPersonalCloud.getCloudNumber(),XDI3Segment.create("$public$do"),"");
 		if(RNPersonalCloud != null) {
-			RNPersonalCloud.setLinkContractAddress(XDI3Segment.create(RNPersonalCloud.getCloudNumber().toString() + "+registrar$from$do"));
+			RNPersonalCloud.setLinkContractAddress(XDI3Segment.create(RNPersonalCloud.getCloudNumber().toString() + "$to" + "+registrar$from$do"));
 			//build check cloudname message
 			ArrayList <XDI3Segment> checkNameStatements = new ArrayList <XDI3Segment>();
 			//[@]!:uuid:9999[$msg]!:uuid:1234$do/$get/(=alice)
 			checkNameStatements.add(XDI3Segment.create("(=alice)"));
-			MessageResult checkNameResponse = CSPPersonalCloud.sendQueriesToPeerCloud(RNPersonalCloud,checkNameStatements, null, false);
+			MessageResult checkNameResponse = CSPPersonalCloud.sendQueriesToPeerCloud(RNPersonalCloud,checkNameStatements, null, registrationServiceURI);
 			System.out.println(checkNameResponse);
 		}
 
