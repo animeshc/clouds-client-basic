@@ -823,6 +823,75 @@ public class PersonalCloud {
 		return messageResult;
 	}
 
+	public MessageResult sendQueriesToPeerCloud(PersonalCloud peerCloud , ArrayList<XDI3Segment> queries,
+			ArrayList<XDI3Statement> queryStmts, boolean isDeref ){
+		XDIClient xdiClient = new XDIHttpClient(peerCloud.cloudEndpointURI);
+
+		// prepare message envelope
+
+		MessageEnvelope messageEnvelope = new MessageEnvelope();
+		Message message = messageEnvelope.createMessage(this.cloudNumber, 0);
+		message.setLinkContractXri(peerCloud.getLinkContractAddress());
+		
+		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(peerCloud.getCloudNumber()));
+
+		if (queries != null && queries.size() > 0) {
+			Iterator<XDI3Segment> queryIter = queries.iterator();
+			while (queryIter.hasNext()) {
+				XDI3Segment query = queryIter.next();
+				GetOperation getOp = message.createGetOperation(query);
+				
+				if (isDeref) {
+					getOp.setParameter(GetOperation.XRI_S_PARAMETER_DEREF, true);
+				}
+			}
+		}
+		if (queryStmts != null && queryStmts.size() > 0) {
+			message.createGetOperation(queryStmts.iterator());
+		}
+
+		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		
+
+		//sign the message
+		message = this.signMessage(message);
+		
+		
+		try {
+			System.out.println("\nbegin message being sent to peer cloud \n");
+			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
+					messageEnvelope.getGraph(), System.out);
+			System.out.println("\nend of message being sent to peer cloud \n");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// send the message
+
+		MessageResult messageResult = null;
+
+		try {
+
+			messageResult = xdiClient.send(messageEnvelope, null);
+			// System.out.println(messageResult);
+			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
+			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
+					System.out);
+
+		} catch (Xdi2ClientException ex) {
+
+			ex.printStackTrace();
+		} catch (Exception ex) {
+
+			ex.printStackTrace();
+		} finally {
+			xdiClient.close();
+		}
+		return messageResult;
+		
+	}
+	
 	public MessageResult sendQueries(ArrayList<XDI3Segment> queries,
 			ArrayList<XDI3Statement> queryStmts, boolean isDeref) {
 

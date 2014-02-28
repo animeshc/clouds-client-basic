@@ -14,6 +14,8 @@ import java.util.Vector;
 import xdi2.core.Graph;
 import xdi2.core.constants.XDILinkContractConstants;
 import xdi2.core.xri3.XDI3Segment;
+import xdi2.core.xri3.XDI3Statement;
+import xdi2.messaging.MessageResult;
 import clouds.client.basic.PCAttribute;
 import clouds.client.basic.PCAttributeCollection;
 import clouds.client.basic.PDSEmail;
@@ -294,10 +296,38 @@ public class Test {
 		//PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=demo2"), "demo2", PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
 		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
 		
-		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=will.test"),"willtest",XDI3Segment.create("$do"),"");
-		Hashtable<String,String> youHaveGivenToSomeone = new Hashtable<String,String>();
-		Hashtable<String,String> someoneGaveItToYou = new Hashtable<String,String>();
-		pc.getListofLCs(youHaveGivenToSomeone, someoneGaveItToYou);
+//		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=will.test"),"willtest",XDI3Segment.create("$do"),"");
+//		Hashtable<String,String> youHaveGivenToSomeone = new Hashtable<String,String>();
+//		Hashtable<String,String> someoneGaveItToYou = new Hashtable<String,String>();
+//		pc.getListofLCs(youHaveGivenToSomeone, someoneGaveItToYou);
+		
+		//point to the XDI discovery service
+		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
+
+		//open the personal cloud for test CSP
+		PersonalCloud CSPPersonalCloud = PersonalCloud.open(XDI3Segment.create("@testcsp"),"whitelabel123",XDI3Segment.create("$do"),"");
+
+		PersonalCloud RNPersonalCloud = null; 
+		
+		if (CSPPersonalCloud != null){
+
+		//open personal cloud for Respect Network – target for Registration messages
+
+		RNPersonalCloud = PersonalCloud.open(XDI3Segment.create("@respect"), CSPPersonalCloud.getCloudNumber(),XDI3Segment.create("$public$do"),"");
+		if(RNPersonalCloud != null) {
+			RNPersonalCloud.setLinkContractAddress(XDI3Segment.create(RNPersonalCloud.getCloudNumber().toString() + "+registrar$from$do"));
+			//build check cloudname message
+			ArrayList <XDI3Segment> checkNameStatements = new ArrayList <XDI3Segment>();
+			//[@]!:uuid:9999[$msg]!:uuid:1234$do/$get/(=alice)
+			checkNameStatements.add(XDI3Segment.create("(=alice)"));
+			MessageResult checkNameResponse = CSPPersonalCloud.sendQueriesToPeerCloud(RNPersonalCloud,checkNameStatements, null, false);
+			System.out.println(checkNameResponse);
+		}
+
+		
+
+		}
+
 		
 //		ProfileInfo profile1 = new ProfileInfo() ; //pc.getProfileInfo("+home");
 //		profile1.setCloudName("=animesh.test");
@@ -318,12 +348,12 @@ public class Test {
 //		String connect = pc.createRespectConnectRequest("+home");
 //		profile1.setRespectConnectXDIMessage(connect);
 //		pc.updateProfileInfo(profile1);
-		ProfileInfo prof1 = pc.getProfileInfo("+willtestprofile1");
-		if(prof1 != null){
-		System.out.println(prof1.toString());
-		} else {
-			System.out.println("Profile NOT FOUND!");
-		}
+//		ProfileInfo prof1 = pc.getProfileInfo("+willtestprofile1");
+//		if(prof1 != null){
+//		System.out.println(prof1.toString());
+//		} else {
+//			System.out.println("Profile NOT FOUND!");
+//		}
 		//pc.deleteProfile("[+profile]!:uuid:79606848-7c7e-4bcd-84e6-5179fbd6d0a1");
 		//PDSEmail mail = pc.getEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
 		//pc.deleteEmail("!:uuid:559c0c5c-e1cb-4d7f-b504-b72490f840c9");
