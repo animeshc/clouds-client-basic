@@ -247,8 +247,35 @@ public class Test {
 		pc_animesh.deleteNodeTree(XDI3Segment.create("[=]!:uuid:0c5525d0-2744-ecf4-0c55-25d02744ecf4[+Person]*markus"));
 		pc_animesh.deleteNodeTree(XDI3Segment.create("[=]!:uuid:0c5525d0-2744-ecf4-0c55-25d02744ecf4[+Person]*les"));
 	}
+	public static void testAddNamedGroup(){
+		PersonalCloud pc_test1 = PersonalCloud.open(
+				 XDI3Segment.create("=neustar.test1"), "mysecret",
+				 PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
+		pc_test1.addNamedGroup("+friend");
+		pc_test1.addNamedGroup("+family");
+	}
+	public static void testAddNamedContext(){
+		PersonalCloud pc_test1 = PersonalCloud.open(
+				 XDI3Segment.create("=neustar.test1"), "mysecret",
+				 PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
+		pc_test1.addNamedContext("+soccer");
+		pc_test1.addNamedContext("+iiw");
+	}
+	public static void testAddEntityToNamedGroup(){
+		PersonalCloud pc_test1 = PersonalCloud.open(
+				 XDI3Segment.create("=neustar.test1"), "mysecret",
+				 PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
+		pc_test1.addNamedGroup("+friend");
+		
+		pc_test1.addEntityToGroup("=neustar.test2", "+friend");
+		
+	}
 	public static void main(String args[]) {
-		 
+		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
+		System.setProperty("https.protocols", "TLSv1");
+		 //Test.testAddNamedGroup();
+		//Test.testAddNamedContext();
+		Test.testAddEntityToNamedGroup();
 		//Test.testAccessGranting();
 		//Test.testSharedDataAccess();
 //		Test.testAccessRemoval();
@@ -294,42 +321,39 @@ public class Test {
 //		
 //		pc_animesh2.approveAccess(XDI3Segment.create(reqURI),null);
 		//PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=demo2"), "demo2", PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
-		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
+		
 		
 //		PersonalCloud pc = PersonalCloud.open(XDI3Segment.create("=will.test"),"willtest",XDI3Segment.create("$do"),"");
 //		Hashtable<String,String> youHaveGivenToSomeone = new Hashtable<String,String>();
 //		Hashtable<String,String> someoneGaveItToYou = new Hashtable<String,String>();
 //		pc.getListofLCs(youHaveGivenToSomeone, someoneGaveItToYou);
 		
-		System.setProperty("https.protocols", "TLSv1");
-		//point to the XDI discovery service
-		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
-
-		//open the personal cloud for test CSP
-		PersonalCloud CSPPersonalCloud = PersonalCloud.open(XDI3Segment.create("@testcsp"),"whitelabel123",XDI3Segment.create("$do"),"");
-
-		 String registrationServiceURI = "https://registration-dev.respectnetwork.net/registration";
-			 
-		PersonalCloud RNPersonalCloud = null; 
 		
-		if (CSPPersonalCloud != null){
-
-		//open personal cloud for Respect Network – target for Registration messages
-
-		RNPersonalCloud = PersonalCloud.open(XDI3Segment.create("@respect"), CSPPersonalCloud.getCloudNumber(),XDI3Segment.create("$public$do"),"");
-		if(RNPersonalCloud != null) {
-			RNPersonalCloud.setLinkContractAddress(XDI3Segment.create(RNPersonalCloud.getCloudNumber().toString() + "$to" + "+registrar$from$do"));
-			//build check cloudname message
-			ArrayList <XDI3Segment> checkNameStatements = new ArrayList <XDI3Segment>();
-			//[@]!:uuid:9999[$msg]!:uuid:1234$do/$get/(=alice)
-			checkNameStatements.add(XDI3Segment.create("(=alice)"));
-			MessageResult checkNameResponse = CSPPersonalCloud.sendQueriesToPeerCloud(RNPersonalCloud,checkNameStatements, null, registrationServiceURI);
-			System.out.println(checkNameResponse);
-		}
-
-		
-
-		}
+//		//point to the XDI discovery service
+//		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
+//
+//		//open the personal cloud for test CSP
+//		PersonalCloud CSPPersonalCloud = PersonalCloud.open(XDI3Segment.create("@testcsp"),"whitelabel123",XDI3Segment.create("$do"),"");
+//
+//		 String registrationServiceURI = "https://registration-dev.respectnetwork.net/registration";
+//			 
+//		PersonalCloud RNPersonalCloud = null; 
+//		
+//		if (CSPPersonalCloud != null){
+//
+//		//open personal cloud for Respect Network – target for Registration messages
+//
+//		RNPersonalCloud = PersonalCloud.open(XDI3Segment.create("@respect"), CSPPersonalCloud.getCloudNumber(),XDI3Segment.create("$public$do"),"");
+//		if(RNPersonalCloud != null) {
+//			RNPersonalCloud.setLinkContractAddress(XDI3Segment.create(RNPersonalCloud.getCloudNumber().toString() + "$to" + "+registrar$from$do"));
+//			//build check cloudname message
+//			ArrayList <XDI3Segment> checkNameStatements = new ArrayList <XDI3Segment>();
+//			//[@]!:uuid:9999[$msg]!:uuid:1234$do/$get/(=alice)
+//			checkNameStatements.add(XDI3Segment.create("(=alice)"));
+//			MessageResult checkNameResponse = CSPPersonalCloud.sendQueriesToPeerCloud(RNPersonalCloud,checkNameStatements, null, registrationServiceURI);
+//			System.out.println(checkNameResponse);
+//		}
+//		}
 
 		
 //		ProfileInfo profile1 = new ProfileInfo() ; //pc.getProfileInfo("+home");

@@ -80,11 +80,25 @@ public class ProfileInfo implements PersonalCloudEntity {
 	}
 
 	public String getRelativeXDIAddress() {
-		return relativeXDIAddress;
+		if(relativeXDIAddress == null || relativeXDIAddress.isEmpty()){
+			return "+profile+default";
+		}
+		if(relativeXDIAddress.startsWith("+profile")) {
+			return relativeXDIAddress;
+		} else {
+			return "+profile" +  relativeXDIAddress;
+		}
 	}
 
-	public void setRelativeXDIAddress(String relativeXDIAddress) {
-		this.relativeXDIAddress = relativeXDIAddress;
+	public void setRelativeXDIAddress(String p_relativeXDIAddress) {
+		if(p_relativeXDIAddress == null || p_relativeXDIAddress.isEmpty()){
+			this.relativeXDIAddress = "+profile+default";
+		}
+		if(p_relativeXDIAddress.startsWith("+profile")) {
+			this.relativeXDIAddress = p_relativeXDIAddress;
+		} else {
+			this.relativeXDIAddress = "+profile" +  p_relativeXDIAddress;	
+		}
 	}
 
 	public String getOrganization() {

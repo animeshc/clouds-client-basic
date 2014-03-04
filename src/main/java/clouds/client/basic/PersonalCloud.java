@@ -158,19 +158,11 @@ public class PersonalCloud {
 			System.out.println(pc.toString());
 			if (secretToken != null && !secretToken.isEmpty()) {
 				pc.secretToken = secretToken;
-				//TBD : find out less costly ways of making sure that the secret token is good
-//				XDI3Segment authorityNodeAddr = XDI3Segment
-//						.create(pc.cloudNumber.toString());
-//
-//				MessageResult result = pc.getXDIStmtsNoSig(authorityNodeAddr,
-//						false);
-//				MemoryGraph response = (MemoryGraph) result.getGraph();
-//				if (response == null
-//						|| response.getRootContextNode() == null
-//						|| response.getRootContextNode()
-//								.getAllContextNodeCount() == 0) {
-//					return null;
-//				}
+				XDI3Statement getName = XDI3Statement.create(pc.cloudNumber
+						+ "/$is$ref/{}");
+				if(pc.getXDIStmtsNoSig(getName, false) == null){
+					return null;
+				}
 
 			}
 			if(cloudNameOrCloudNumber.toString().startsWith("=") || cloudNameOrCloudNumber.toString().startsWith("@") || cloudNameOrCloudNumber.toString().startsWith("*")){
@@ -402,10 +394,10 @@ public class PersonalCloud {
 		}
 		if(profileInfo.isDefault()){
 			//create the relative address as a context with $rep to the profile context
-			profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString()  +  "+default+profile" + "/$rep/" + cloudNumber.toString() + "[+profile]" + uuid 
+			profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString()  +  "+profile+default" + "/$rep/" + cloudNumber.toString() + "[+profile]" + uuid 
 					));
 			//create a public link contract to the named context so that the context is readable to everyone
-			profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString()  +"$to$anon$from$public$do" +"/" +  "$get" + "/" +   cloudNumber.toString()  +  "+default+profile" 
+			profileXDIStmts.add(XDI3Statement.create(cloudNumber.toString()  +"$to$anon$from$public$do" +"/" +  "$get" + "/" +   cloudNumber.toString()  +  "+profile+default" 
 					));
 			
 		}
@@ -576,6 +568,9 @@ public class PersonalCloud {
 		}
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
 
+		if(!relativeXDIAddress.startsWith("+profile")){
+			relativeXDIAddress = "+profile" + relativeXDIAddress;
+		}
 		
 		XDI3Segment targetCtxNode = XDI3Segment.create(cloudNumber.toString()
 				+  relativeXDIAddress);
@@ -658,20 +653,17 @@ public class PersonalCloud {
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
 		Message message = messageEnvelope.createMessage(this.senderCloudNumber, 0);
 		message.setLinkContractXri(linkContractAddress);
-		//System.out.println("setXDIStmts 2");
-		if (secretToken != null) {
-			message.setSecretToken(secretToken);
-			message = this.signMessage(message);
-		}
+
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(this.cloudNumber));
 
 		if (XDIStmts != null && XDIStmts.size() > 0) {
 			message.createSetOperation(XDIStmts.iterator());
 		}
 
-		
-		System.out.println();
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		if (secretToken != null) {
+			message.setSecretToken(secretToken);
+			message = this.signMessage(message);
+		}
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -679,7 +671,6 @@ public class PersonalCloud {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println();
 		// send the message
 
 		MessageResult messageResult = null;
@@ -687,8 +678,6 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			//System.out.println("setXDIStmts 4");
-			// System.out.println(messageResult);
 			try {
 				XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 						messageResult.getGraph(), System.out);
@@ -708,60 +697,67 @@ public class PersonalCloud {
 		}
 		return messageResult;
 	}
+	public MessageResult setXDIStmtsToPeerCloud(PersonalCloud peerCloud , ArrayList<XDI3Statement> XDIStmts , String targetEndpointURI) {
+		// prepare XDI client
 
-//	public MessageResult setXDISegment(XDI3Segment targetSegment) {
-//
-//		// prepare XDI client
-//
-//		XDIClient xdiClient = new XDIHttpClient(cloudEndpointURI);
-//
-//		// prepare message envelope
-//
-//		MessageEnvelope messageEnvelope = new MessageEnvelope();
-//		Message message = messageEnvelope.createMessage(cloudNumber, 0);
-//		message.setLinkContractXri(linkContractAddress);
-//
-//		message.setSecretToken(secretToken);
-//
-//		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
-//		message.createSetOperation(targetSegment);
-//
-//		// System.out.println("Message :\n" + messageEnvelope + "\n");
-//		try {
-//			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
-//					messageEnvelope.getGraph(), System.out);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//
-//		// send the message
-//
-//		MessageResult messageResult = null;
-//
-//		try {
-//
-//			messageResult = xdiClient.send(messageEnvelope, null);
-//			// System.out.println(messageResult);
-//			try {
-//				XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
-//						messageResult.getGraph(), System.out);
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//
-//		} catch (Xdi2ClientException ex) {
-//
-//			ex.printStackTrace();
-//		} catch (Exception ex) {
-//
-//			ex.printStackTrace();
-//		} finally {
-//			xdiClient.close();
-//		}
-//		return messageResult;
-//	}
+		XDIClient xdiClient = null ;
+		if(targetEndpointURI == null || targetEndpointURI.isEmpty()) {
+			xdiClient = new XDIHttpClient(cloudEndpointURI);
+		} else {
+			xdiClient = new XDIHttpClient(targetEndpointURI);
+		}
+
+		// prepare message envelope
+
+		MessageEnvelope messageEnvelope = new MessageEnvelope();
+		Message message = messageEnvelope.createMessage(this.cloudNumber, 0);
+		message.setLinkContractXri(peerCloud.getLinkContractAddress());
+
+		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(peerCloud.getCloudNumber()));
+
+		if (XDIStmts != null && XDIStmts.size() > 0) {
+			message.createSetOperation(XDIStmts.iterator());
+		}
+		
+		message = this.signMessage(message);
+		
+		System.out.println();
+		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		try {
+			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
+					messageEnvelope.getGraph(), System.out);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// send the message
+		MessageResult messageResult = null;
+
+		try {
+
+			messageResult = xdiClient.send(messageEnvelope, null);
+			try {
+				XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
+						messageResult.getGraph(), System.out);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+		} catch (Xdi2ClientException ex) {
+
+			ex.printStackTrace();
+		} catch (Exception ex) {
+
+			ex.printStackTrace();
+		} finally {
+			xdiClient.close();
+		}
+		return messageResult;
+		
+	}
+
 
 	public MessageResult delXDIStmts(ArrayList<XDI3Statement> XDIStmts,
 			XDI3Segment target) {
@@ -829,7 +825,7 @@ public class PersonalCloud {
 		boolean isDeref = false;
 		XDIClient xdiClient = null;
 		if(targetEndpointURI == null || targetEndpointURI.isEmpty()){
-		xdiClient = new XDIHttpClient(peerCloud.cloudEndpointURI);
+			xdiClient = new XDIHttpClient(peerCloud.cloudEndpointURI);
 		} else {
 			xdiClient = new XDIHttpClient(targetEndpointURI);
 		}
@@ -857,13 +853,8 @@ public class PersonalCloud {
 			message.createGetOperation(queryStmts.iterator());
 		}
 
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
-		
-
 		//sign the message
 		message = this.signMessage(message);
-		
-		
 		try {
 			System.out.println("\nbegin message being sent to peer cloud \n");
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
@@ -881,7 +872,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
@@ -1032,8 +1023,42 @@ public class PersonalCloud {
 		System.out.println();
 		return messageEnvelope;
 	}
+	public MessageEnvelope buildMessage(XDI3Statement query, boolean isDeref,
+			boolean withSignature) {
+		// prepare message envelope
 
-	public MessageResult getXDIStmtsNoSig(XDI3Segment query, boolean isDeref) {
+		MessageEnvelope messageEnvelope = new MessageEnvelope();
+		Message message = messageEnvelope.createMessage(senderCloudNumber, 0);
+		if(linkContractAddress != null && linkContractAddress.toString().equals("$do")){
+			linkContractAddress = RootLinkContract.createRootLinkContractXri(cloudNumber);
+		}
+		message.setLinkContractXri(linkContractAddress);
+		if (secretToken != null) {
+			message.setSecretToken(secretToken);
+		}
+		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
+
+		GetOperation getOp = message.createGetOperation(query);
+		if (isDeref) {
+			getOp.setParameter(GetOperation.XRI_S_PARAMETER_DEREF, true);
+		}
+		if (withSignature) {
+			message = this.signMessage(message);
+		}
+		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		System.out.println();
+		try {
+			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
+					messageEnvelope.getGraph(), System.out);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println();
+		return messageEnvelope;
+	}
+
+	protected MessageResult getXDIStmtsNoSig(XDI3Segment query, boolean isDeref) {
 
 		XDIClient xdiClient = new XDIHttpClient(cloudEndpointURI);
 
@@ -1063,6 +1088,35 @@ public class PersonalCloud {
 		return messageResult;
 	}
 
+	protected MessageResult getXDIStmtsNoSig(XDI3Statement query, boolean isDeref) {
+
+		XDIClient xdiClient = new XDIHttpClient(cloudEndpointURI);
+
+		// prepare message envelope
+
+		MessageEnvelope messageEnvelope = this.buildMessage(query, isDeref,
+				false);
+		MessageResult messageResult = null;
+
+		try {
+
+			messageResult = xdiClient.send(messageEnvelope, null);
+			// System.out.println(messageResult);
+			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
+			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
+					System.out);
+
+		} catch (Xdi2ClientException ex) {
+
+			ex.printStackTrace();
+		} catch (Exception ex) {
+
+			ex.printStackTrace();
+		} finally {
+			xdiClient.close();
+		}
+		return messageResult;
+	}
 	/*
 	 * contact info
 	 */
@@ -3433,6 +3487,104 @@ public class PersonalCloud {
 				.getTargetContextNodeXri().toString();
 
 		return cloudName;
+	}
+	/**
+	 * cloudName : identifier for the person/entity that's being added, ex. =alice
+	 * groupName : identifier for the group that's being added, ex. +friend
+	 * @return : if the operation is successful return true, else return false
+	 */
+	public boolean addEntityToGroup(String cloudName , String groupName){
+		PersonalCloud entityCloud = PersonalCloud.open(XDI3Segment.create(cloudName), this.getCloudNumber(), XDI3Segment.create("$public$do"), "");
+		if(entityCloud == null){
+			return false;
+		}
+		
+		ArrayList<XDI3Statement> XDIStmts = new ArrayList<XDI3Statement>();
+		XDIStmts.add(XDI3Statement.create(this.cloudNumber + "+group" + groupName + "/()/" + entityCloud.getCloudNumber()));
+		XDIStmts.add(XDI3Statement.create( this.cloudNumber +  "/" + groupName + "/" + this.cloudNumber + "+group" + groupName + entityCloud.getCloudNumber()));
+		MessageResult result = this.setXDIStmts(XDIStmts);
+		if(result == null){
+			return false;
+		} else {
+			return true;
+		}
+		 
+	}
+	/**
+	 * 
+	 * @param groupName : XDI name for the group , ex : +friend , +family , +special+friend
+	 * @return
+	 */
+	public boolean addNamedGroup(String groupName){
+		
+		ArrayList<XDI3Statement> XDIStmts = new ArrayList<XDI3Statement>();
+		XDIStmts.add(XDI3Statement.create(this.cloudNumber + "/()/" + "+group" + groupName));
+		XDIStmts.add(XDI3Statement.create( this.cloudNumber +  "/" + "+group" + groupName + "/" + this.cloudNumber + "+group" + groupName ));		
+		MessageResult result = this.setXDIStmts(XDIStmts);
+		if(result == null){
+			return false;
+		} else {
+			return true;
+		}
+	}
+	/**
+	 * 
+	 * @param contextName
+	 * @return
+	 */
+	public boolean addNamedContext(String contextName){
+		
+		ArrayList<XDI3Statement> XDIStmts = new ArrayList<XDI3Statement>();
+		XDIStmts.add(XDI3Statement.create(this.cloudNumber + "/()/" + "+context" + contextName));
+		MessageResult result = this.setXDIStmts(XDIStmts);
+		if(result == null){
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	/**
+	 * ex : (cloudnumber/+friend)+group+friend$do/$get/cloudnumber+context+soccer , (cloudnumber/+family)+group+family$do/$get/cloudnumber+context+home
+	 * @param contextName :
+	 * @param groupName : relationship
+	 * @param cloudNameOrNumber : the entity that access is being given to
+	 * @return
+	 */
+	public boolean shareContextWithGroupOrIndividual(String contextName , String groupName,  String cloudNameOrNumber){
+		
+		String cloudNumber = cloudNameOrNumber;
+		
+		if(cloudNameOrNumber != null && !cloudNameOrNumber.isEmpty() && (cloudNameOrNumber.startsWith("=") || cloudNameOrNumber.startsWith("@"))){
+			PersonalCloud entityCloud = PersonalCloud.open(XDI3Segment.create(cloudNameOrNumber), this.getCloudNumber(), XDI3Segment.create("$public$do"), "");
+			if(entityCloud == null){
+				return false;
+			}
+			cloudNumber = entityCloud.getCloudNumber().toString();
+		}
+			
+		ArrayList<XDI3Statement> XDIStmts = new ArrayList<XDI3Statement>();
+		XDI3Statement LCStmt = XDI3Statement.create("(" + this.cloudNumber + "/" + groupName + ")" +  "$do/$get/" + this.cloudNumber + "+context" + contextName);
+		
+		XDI3Statement LCStmtPolicy = null;
+		XDI3Statement LCStmt2 = null;
+		if(cloudNameOrNumber == null || cloudNameOrNumber.isEmpty()){
+			LCStmtPolicy = XDI3Statement.create("(" + this.cloudNumber + "/" + groupName + ")" +  "$do$if$or/$true/(" + this.cloudNumber + "/" + groupName + "/{$from})");
+			
+		} else {
+			LCStmtPolicy = XDI3Statement.create("(" + this.cloudNumber + "/" + groupName + ")" +  "$do$if$or/$true/(" + "{$from}" + "/" + "$is" + "/" + cloudNumber + ")");
+			LCStmt2 = XDI3Statement.create( this.cloudNumber +  "$to" + cloudNumber + "$from+registration$do/$get/" + this.cloudNumber + "+context" + contextName);
+		}
+		XDIStmts.add(LCStmt);
+		XDIStmts.add(LCStmt2);
+		XDIStmts.add(LCStmtPolicy);
+		MessageResult result = this.setXDIStmts(XDIStmts);
+		
+		if(result == null){
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 }
