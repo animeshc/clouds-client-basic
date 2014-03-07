@@ -81,33 +81,7 @@ public class Test {
 
 	}
 	
-	public static void testSaveAndGet(){
-		
-		PersonalCloud pc1 = PersonalCloud.open(
-				 XDI3Segment.create("=dev.animesh"), "animesh123",
-				 PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
-		
-		 PCAttributeCollection todoList = new PCAttributeCollection("TODO");
-		 PCAttribute task1 = new PCAttribute("Task1",
-		 "Find out meaning of life", todoList);
-		 PCAttribute task2 = new PCAttribute("Task2",
-		 "Tell everyone that you've found out the meaning of life", todoList);
-		 pc1.save(todoList);
-		
-		 PCAttributeCollection gadgets = new PCAttributeCollection("home.devices");
-		 PCAttribute comp1 = new PCAttribute("device1",
-		 "Animesh's desnktop", gadgets);
-		 PCAttribute comp2 = new PCAttribute("device2",
-		 "Macbook Air", gadgets);
-		 PCAttribute comp3 = new PCAttribute("device3",
-				 "Trina's iPad", gadgets);
-		 pc1.save(gadgets);
-		PCAttributeCollection todoListR = new PCAttributeCollection("TODO");
-		PCAttribute tsk1 = pc1.readAttr(todoListR, "Task1");
-		System.out.println("Task1 : " + tsk1.getValue());
-
-		
-	}
+	
 	public static void testAccessGranting(){
 		PersonalCloud pc1 = PersonalCloud.open(
 				 XDI3Segment.create("=dev.animesh"), "animesh123",
@@ -157,12 +131,7 @@ public class Test {
 		//System.out.println("Shared PC's phone:" + pc2.getProfileInfo().getPhone());
 		
 	}
-	public static void getAllCollections(){
-		PersonalCloud pc1 = PersonalCloud.open(
-				 XDI3Segment.create("=dev.animesh"), "animesh123",
-				 PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
-		ArrayList<PCAttributeCollection> allColls = pc1.geAllCollections();
-	}
+	
 	public static void testPDSXOps(){
 		PersonalCloud pc1 = PersonalCloud.open(
 				 XDI3Segment.create("=dev.animesh"), "animesh123",
@@ -191,13 +160,7 @@ public class Test {
 		System.out.println(person1.toString());
 		//PDSXEntity.get(pc1, "Person", 1);
 	}
-	public static void testDefaultLCs(){
-		PersonalCloud pc1 = PersonalCloud.open(
-				 XDI3Segment.create("=dev.animesh3"), "animesh123",
-				 PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT, "","");
-		pc1.createDefaultLinkContracts();
-		pc1.getWholeGraph();
-	}
+	
 	public static void testRelationships(){
 		PersonalCloud pc_animesh = PersonalCloud.open(
 				 XDI3Segment.create("=dev.animesh3"), "animesh123",
@@ -233,7 +196,7 @@ public class Test {
 				 XDI3Segment.create("$public$do"), "");
 		//pc_animesh2.getPCEntity(XDI3Segment.create(pc_animesh2.getCloudNumber().toString() + "[+Person]*trung"), XDI3Segment.create(pc_animesh2.getCloudNumber().toString() + "+friend$do" ));
 		//pc_markus.getPCEntity(XDI3Segment.create(pc_animesh2.getCloudNumber().toString() + "<+email>&"), XDI3Segment.create(pc_animesh2.getCloudNumber().toString() + "+friend$do" ),pc_animesh2);
-		pc_markus2.getPCEntity(XDI3Segment.create("=animesh" + "<+personal_email>&"), XDI3Segment.create(pc_animesh2.getCloudNumber().toString() + "+friend$do" ),pc_animesh2);
+		
 		
 	}
 	public static void testDeleteNode(){
@@ -273,9 +236,24 @@ public class Test {
 	public static void main(String args[]) {
 		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
 		System.setProperty("https.protocols", "TLSv1");
+		PersonalCloud debishCloud = PersonalCloud.open(XDI3Segment.create("=debish"), "mysecret", XDI3Segment.create("$do"), "", "");
+		if(debishCloud != null){
+			Hashtable<String,Object> nvPairs = new Hashtable<String,Object>();
+			nvPairs.put(debishCloud.getCloudNumber() + "<+phone>&", "123-456-7890");
+			nvPairs.put(debishCloud.getCloudNumber() + "<+age>&", new Integer(19));
+			nvPairs.put(debishCloud.getCloudNumber() + "<+smoker>&", new Boolean(false));
+			nvPairs.put(debishCloud.getCloudNumber() + "<+height>&", new Double(5.11));
+			debishCloud.saveNameValuePairs(nvPairs);
+			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<+phone>&"));
+			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<+age>&"));
+			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<+smoker>&"));
+			debishCloud.deleteLiteralValue(debishCloud.getCloudNumber() + "<+phone>&");
+			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<+phone>&"));
+			//debishCloud.getWholeGraph();
+		}
 		 //Test.testAddNamedGroup();
 		//Test.testAddNamedContext();
-		Test.testAddEntityToNamedGroup();
+		//Test.testAddEntityToNamedGroup();
 		//Test.testAccessGranting();
 		//Test.testSharedDataAccess();
 //		Test.testAccessRemoval();
