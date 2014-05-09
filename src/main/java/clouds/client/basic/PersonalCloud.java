@@ -68,7 +68,7 @@ public class PersonalCloud {
 	public static XDI3Segment XRI_S_DEFAULT_LINKCONTRACT = XDI3Segment
 			.create("$do");
 
-	public static String DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
+	public static String DEFAULT_REGISTRY_URI = "https://xdidiscoveryserviceote.xdi.net/";
 
 	private String secretToken = null;
 	private XDI3Segment linkContractAddress = null;
@@ -2082,11 +2082,12 @@ public class PersonalCloud {
 		String value = (literalValue == null) ? "" : literalValue
 				.getLiteralData().toString();
 		byte[] key = value.getBytes();
-		signature = Signatures.setSignature(contextNode,
+		
+		signature = Signatures.createSignature(contextNode,
 				PersonalCloud.DEFAULT_DIGEST_ALGORITHM,
 				Integer.parseInt(PersonalCloud.DEFAULT_DIGEST_LENGTH),
 				PersonalCloud.DEFAULT_KEY_ALGORITHM,
-				Integer.parseInt(PersonalCloud.DEFAULT_KEY_LENGTH));
+				Integer.parseInt(PersonalCloud.DEFAULT_KEY_LENGTH),true);
 
 		if (signature instanceof KeyPairSignature) {
 
@@ -2171,29 +2172,26 @@ public class PersonalCloud {
 						.getLiteralData().toString();
 
 				byte[] key = value.getBytes();
-				signature = Signatures.getSignature(contextNode);
-				if (signature == null)
+				ReadOnlyIterator<Signature<? extends Key, ? extends Key>>signatures = Signatures.getSignatures(contextNode);
+				if (signatures == null)
 					throw new RuntimeException("No signature found at address "
 							+ signedNode);
 
-				if (signature instanceof KeyPairSignature) {
-
-					X509EncodedKeySpec keySpec = new X509EncodedKeySpec(
-							Base64.decodeBase64(key));
-					KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-					k = keyFactory.generatePublic(keySpec);
-
-					valid = Boolean.valueOf(((KeyPairSignature) signature)
-							.validate((PublicKey) k));
-					fromPC.setSignaturePublicKey((PublicKey) k);
+				while(signatures.hasNext())
+				{
+				   signature = signatures.next();
+   				if (signature instanceof KeyPairSignature) {
+   
+   					X509EncodedKeySpec keySpec = new X509EncodedKeySpec(
+   							Base64.decodeBase64(key));
+   					KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+   					k = keyFactory.generatePublic(keySpec);
+   
+   					valid = Boolean.valueOf(((KeyPairSignature) signature)
+   							.validate((PublicKey) k));
+   					fromPC.setSignaturePublicKey((PublicKey) k);
+   				}
 				}
-				// else if (signature instanceof SymmetricKeySignature) {
-				//
-				// k = new SecretKeySpec(Base64.decodeBase64(key), "AES");
-				//
-				// valid = Boolean.valueOf(((SymmetricKeySignature)
-				// signature).validate((SecretKey) k));
-				// }
 			}
 
 			// output the graph or result
@@ -2306,11 +2304,11 @@ public class PersonalCloud {
 		String value = (literalValue == null) ? "" : literalValue
 				.getLiteralData().toString();
 		byte[] key = value.getBytes();
-		signature = Signatures.setSignature(contextNode,
+		signature = Signatures.createSignature(contextNode,
 				PersonalCloud.DEFAULT_DIGEST_ALGORITHM,
 				Integer.parseInt(PersonalCloud.DEFAULT_DIGEST_LENGTH),
 				PersonalCloud.DEFAULT_KEY_ALGORITHM,
-				Integer.parseInt(PersonalCloud.DEFAULT_KEY_LENGTH));
+				Integer.parseInt(PersonalCloud.DEFAULT_KEY_LENGTH),true);
 
 		if (signature instanceof KeyPairSignature) {
 
