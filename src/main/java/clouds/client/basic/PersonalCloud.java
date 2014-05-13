@@ -15,17 +15,16 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
-import java.util.Vector;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import xdi2.client.XDIClient;
 import xdi2.client.exceptions.Xdi2ClientException;
@@ -37,7 +36,6 @@ import xdi2.core.Relation;
 import xdi2.core.exceptions.Xdi2ParseException;
 import xdi2.core.features.linkcontracts.PublicLinkContract;
 import xdi2.core.features.linkcontracts.RootLinkContract;
-import xdi2.core.features.nodetypes.XdiAbstractMemberUnordered;
 import xdi2.core.features.nodetypes.XdiPeerRoot;
 import xdi2.core.features.signatures.KeyPairSignature;
 import xdi2.core.features.signatures.Signature;
@@ -60,8 +58,6 @@ import xdi2.messaging.GetOperation;
 import xdi2.messaging.Message;
 import xdi2.messaging.MessageEnvelope;
 import xdi2.messaging.MessageResult;
-
-import com.ibm.icu.util.StringTokenizer;
 
 public class PersonalCloud {
 
@@ -92,7 +88,8 @@ public class PersonalCloud {
 	public static String DEFAULT_KEY_ALGORITHM = "rsa";
 	public static String DEFAULT_KEY_LENGTH = "2048";
 
-	
+	private static final Logger logger = LoggerFactory
+         .getLogger(PersonalCloud.class);
 
 	/*
 	 * factory methods for opening personal clouds
@@ -159,7 +156,7 @@ public class PersonalCloud {
 				pc.linkContractAddress = linkContractAddress;
 			}
 			
-			System.out.println(pc.toString());
+			logger.debug(pc.toString());
 			if (secretToken != null && !secretToken.isEmpty()) {
 				pc.secretToken = secretToken;
 				XDI3Statement getName = XDI3Statement.create(pc.cloudNumber
@@ -312,7 +309,7 @@ public class PersonalCloud {
 		message.createGetOperation(XDI3Segment.create(""));
 		message = this.signMessage(message);
 
-		System.out.println();
+		logger.debug("\n");
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -321,7 +318,7 @@ public class PersonalCloud {
 			e.printStackTrace();
 		}
 
-		System.out.println();
+		logger.debug("\n");
 		// send the message
 
 		MessageResult messageResult;
@@ -329,12 +326,12 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
-			System.out.println("**************Graph Start***************\n");
+			logger.debug("**************Graph Start***************\n");
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
-			System.out.println("\n**************Graph End***************");
+			logger.debug("\n**************Graph End***************");
 
 			return response;
 
@@ -434,7 +431,7 @@ public class PersonalCloud {
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
 		message.createSetOperation(profileXDIStmts.iterator());
 
-		System.out.println("Message :\n" + messageEnvelope + "\n");
+		logger.debug("Message :\n" + messageEnvelope + "\n");
 
 		// send the message
 
@@ -443,7 +440,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			System.out.println(messageResult);
+			logger.debug(messageResult.getGraph().toString());
 
 		} catch (Xdi2ClientException ex) {
 
@@ -518,7 +515,7 @@ public class PersonalCloud {
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
 		message.createSetOperation(profileXDIStmts.iterator());
 
-		System.out.println("Message :\n" + messageEnvelope + "\n");
+		logger.debug("Message :\n" + messageEnvelope + "\n");
 
 		// send the message
 
@@ -527,7 +524,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			System.out.println(messageResult);
+			logger.debug(messageResult.getGraph().toString());
 
 		} catch (Xdi2ClientException ex) {
 
@@ -569,7 +566,7 @@ public class PersonalCloud {
 		XDI3Segment targetCtxNode = XDI3Segment.create(cloudNumber.toString()
 				+  relativeXDIAddress);
 		message.createGetOperation(targetCtxNode);
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		// logger.debug("Message :\n" + messageEnvelope + "\n");
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -586,7 +583,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
@@ -615,7 +612,7 @@ public class PersonalCloud {
 			String connect = (connectLiteral == null) ? "" : connectLiteral
 					.getLiteralData().toString();
 			profileInfo.setRespectConnectXDIMessage(connect);
-			//System.out.println("\n\nProfile Connect " + connect + "\n\n");
+			//logger.debug("\n\nProfile Connect " + connect + "\n\n");
 			
 
 		} catch (Xdi2ClientException ex) {
@@ -810,8 +807,8 @@ public class PersonalCloud {
 		
 		message = this.signMessage(message);
 		
-		System.out.println();
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		logger.debug("\n");
+		// logger.debug("Message :\n" + messageEnvelope + "\n");
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -878,7 +875,7 @@ public class PersonalCloud {
 			message.createDelOperation(target);
 		}
 
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		// logger.debug("Message :\n" + messageEnvelope + "\n");
 		
 
 		// send the message
@@ -899,7 +896,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			try {
 				XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 						messageResult.getGraph(), System.out);
@@ -965,10 +962,10 @@ public class PersonalCloud {
 		//sign the message
 		message = this.signMessage(message);
 		try {
-			System.out.println("\nbegin message being sent to peer cloud \n");
+			logger.debug("\nbegin message being sent to peer cloud \n");
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
-			System.out.println("\nend of message being sent to peer cloud \n");
+			logger.debug("\nend of message being sent to peer cloud \n");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1039,7 +1036,7 @@ public class PersonalCloud {
 			message.createGetOperation(queryStmts.iterator());
 		}
 
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		// logger.debug("Message :\n" + messageEnvelope + "\n");
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -1058,7 +1055,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
@@ -1094,7 +1091,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
@@ -1141,8 +1138,8 @@ public class PersonalCloud {
 		if (withSignature) {
 			message = this.signMessage(message);
 		}
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
-		System.out.println();
+		// logger.debug("Message :\n" + messageEnvelope + "\n");
+		logger.debug("\n");
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -1150,7 +1147,7 @@ public class PersonalCloud {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println();
+		logger.debug("\n");
 		return messageEnvelope;
 	}
 	
@@ -1183,8 +1180,8 @@ public class PersonalCloud {
 		if (withSignature) {
 			message = this.signMessage(message);
 		}
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
-		System.out.println();
+		// logger.debug("Message :\n" + messageEnvelope + "\n");
+		logger.debug("\n");
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -1192,7 +1189,7 @@ public class PersonalCloud {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		System.out.println();
+		logger.debug("\n");
 		return messageEnvelope;
 	}
 
@@ -1215,7 +1212,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
@@ -1251,7 +1248,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
@@ -1312,7 +1309,7 @@ public class PersonalCloud {
 				+ "$do/" + permissionXri.toString() + "/"
 				+ entity.getAddress(this)));
 
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		// logger.debug("Message :\n" + messageEnvelope + "\n");
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -1331,7 +1328,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
@@ -1358,7 +1355,7 @@ public class PersonalCloud {
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
 		message.createDelOperation(target);
 
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		// logger.debug("Message :\n" + messageEnvelope + "\n");
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -1374,7 +1371,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
@@ -1413,7 +1410,7 @@ public class PersonalCloud {
 		message.createDelOperation(XDI3Segment.create(assigneeCN.toString()
 				+ "$do"));
 
-		// System.out.println("Message :\n" + messageEnvelope + "\n");
+		// logger.debug("Message :\n" + messageEnvelope + "\n");
 		try {
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
@@ -1429,7 +1426,7 @@ public class PersonalCloud {
 		try {
 
 			messageResult = xdiClient.send(messageEnvelope, null);
-			// System.out.println(messageResult);
+			// logger.debug(messageResult);
 			MemoryGraph response = (MemoryGraph) messageResult.getGraph();
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(response,
 					System.out);
@@ -1529,10 +1526,10 @@ public class PersonalCloud {
 		//sign the message
 		message = this.signMessage(message);
 		try {
-			System.out.println("\nbegin message being sent to peer cloud \n");
+			logger.debug("\nbegin message being sent to peer cloud \n");
 			XDIWriterRegistry.forFormat("XDI DISPLAY", null).write(
 					messageEnvelope.getGraph(), System.out);
-			System.out.println("\nend of message being sent to peer cloud \n");
+			logger.debug("\nend of message being sent to peer cloud \n");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1581,12 +1578,12 @@ public class PersonalCloud {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		// System.out.println("Connect Request :\n" + connectRequest);
+		// logger.debug("Connect Request :\n" + connectRequest);
 
-		System.out.println("respondingPartyCloudNumber : \n"
+		logger.debug("respondingPartyCloudNumber : \n"
 				+ respondingPartyCloudNumber);
 
-		System.out.println("Auth Token : \n" + authToken);
+		logger.debug("Auth Token : \n" + authToken);
 		this.secretToken = authToken;
 		this.linkContractAddress = PersonalCloud.XRI_S_DEFAULT_LINKCONTRACT;
 		this.cloudNumber = XDI3Segment.create(respondingPartyCloudNumber);
@@ -1605,7 +1602,7 @@ public class PersonalCloud {
 			for (ContextNode ci : allCNodes) {
 				if (ci.containsContextNode(XDI3SubSegment.create("[$msg]"))) {
 					templateOwnerInumber = ci.toString();
-					System.out.println(templateOwnerInumber);
+					logger.debug(templateOwnerInumber);
 					break;
 				}
 			}
@@ -1618,22 +1615,53 @@ public class PersonalCloud {
 			// $set{$do}
 
 			String lcTemplateAddress = null;
+			String msgContext = "";
 
 			ReadOnlyIterator<Relation> allRelations = c.getAllRelations();
 			for (Relation r : allRelations) {
 				if (r.getArcXri().toString().equals("$set{$do}")) {
 					lcTemplateAddress = r.getTargetContextNodeXri().toString();
-					System.out.println(r.getTargetContextNodeXri());
+					logger.debug(r.getTargetContextNodeXri().toString());
 				} else if (r.getArcXri().toString().equals("$get")) {
 					if (r.getTargetContextNodeXri().toString().contains("{$to}")) {
 						getDataFields.add(r.getTargetContextNodeXri());
 					}
+				} else if(r.getArcXri().toString().equals("$is#"))
+				{
+				   if(r.getContextNode().toString().contains("<#return>"))
+				   {				      
+				      formParams.put("return_type", r.getTargetContextNodeXri().toString());
+				      logger.debug("return type " + r.getTargetContextNodeXri().toString()+"\n\n"); 
+				   }
+				} 
+				else if(r.getArcXri().toString().equals("$is()"))
+				{
+				   msgContext = r.getContextNode().toString();
 				}
-
+				/*
+				else if (r.getArcXri().toString().equals("&"))
+				{
+				   if(r.getContextNode().toString().contains("<#return><$uri>&"))
+               {                 
+				      formParams.put("return_uri", r.getTargetContextNodeXri().toString());
+	               logger.debug("return uri " + r.getTargetContextNodeXri().toString()+"\n\n"); 
+               }
+				}
+            */
 			}
 			if (lcTemplateAddress == null) {
-				System.out.println("No LC template address provided");
+				logger.debug("No LC template address provided");
 				return false;
+			}
+			logger.debug("Now looking for return uri literal");
+			Literal litRetURI = c.getDeepLiteral(XDI3Segment.create(msgContext + "$set{$do}<#return><$uri>&"));
+			if(litRetURI != null)
+			{
+			   
+			      logger.debug("return uri b4 " + litRetURI);
+			      formParams.put("return_uri", litRetURI.getLiteralDataString());
+			      logger.debug("return uri " + litRetURI.getLiteralDataString());
+			    
 			}
 //			String meta_link_contract = "{$to}" + templateOwnerInumber
 //					+ "{$from}" + templateOwnerInumber + "+registration$do";
@@ -1650,8 +1678,9 @@ public class PersonalCloud {
 			ArrayList<XDI3Statement> queryStmts = new ArrayList<XDI3Statement>();
 			queryStmts.add(XDI3Statement.create(templateOwnerInumber
 					+ "/$is$ref/{}"));
+			/*
 			MessageResult responseFromRemoteCloud = null;
-
+			
 			try {
 				responseFromRemoteCloud = remoteCloud.sendQueries(
 						querySegments, queryStmts, false);
@@ -1661,7 +1690,7 @@ public class PersonalCloud {
 			if (responseFromRemoteCloud == null) {
 				return false;
 			}
-
+			 
 			Graph responseGraph = responseFromRemoteCloud.getGraph();
 			ContextNode responseRootContext = responseGraph
 					.getRootContextNode();
@@ -1674,7 +1703,7 @@ public class PersonalCloud {
 				if (r.getArcXri().toString().equals("$get")) {
 
 					//getDataFields.add(r.getTargetContextNodeXri());
-					// System.out.println(r.getTargetContextNodeXri());
+					// logger.debug(r.getTargetContextNodeXri());
 
 				}
 
@@ -1682,7 +1711,7 @@ public class PersonalCloud {
 
 			Literal requestingPartyNameLit = responseRootContext
 					.getDeepLiteral(XDI3Segment.create(templateOwnerInumber
-							+ "<+name>&"));
+							+ "<#name>&"));
 			Relation requestingPartyCloudnameRel = responseRootContext
 					.getDeepRelation(XDI3Segment.create(templateOwnerInumber),
 							XDI3Segment.create("$is$ref"));
@@ -1691,9 +1720,10 @@ public class PersonalCloud {
 						.getDeepRelation(XDI3Segment.create(""),
 								XDI3Segment.create("$is$ref"));
 			}
+			
 			String requestingPartyCloudName = requestingPartyCloudnameRel
 					.getTargetContextNodeXri().toString();
-
+*/
 			querySegments = new ArrayList<XDI3Segment>();
 			queryStmts = new ArrayList<XDI3Statement>();
 			for (XDI3Segment dataField : getDataFields) {
@@ -1715,17 +1745,16 @@ public class PersonalCloud {
 					.getAllLiterals();
 
 			for (Literal lit : allLiteralsFromResponse) {
-
-				if(!lit.getContextNode().toString().contains("<+connect>&")){
+			   logger.debug("\nData from =alice's graph " + lit.getContextNode().toString() + "-->" + lit.getLiteralDataString());
 					requestedFields.put(lit.getContextNode().toString(),
 							lit.getLiteralDataString());
-				}
-
 			}
 			formParams.put("linkContractTemplateAddress", lcTemplateAddress);
 			formParams.put("requestingPartyCloudNumber", templateOwnerInumber);
-			formParams
-					.put("requestingPartyCloudName", requestingPartyCloudName);
+//			formParams
+//					.put("requestingPartyCloudName", requestingPartyCloudName);
+       formParams
+       .put("requestingPartyCloudName", "+meeco-app");
 		} catch (Xdi2ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -1735,7 +1764,7 @@ public class PersonalCloud {
 			e.printStackTrace();
 			return false;
 		}
-
+		logger.debug("showApprovalForm2 returned true");
 		return true;
 	}
 
@@ -1754,7 +1783,7 @@ public class PersonalCloud {
 		isPlusstmt += relyingPartyCloudNumber;
 		isPlusstmt += "$from";
 		isPlusstmt += relyingPartyCloudNumber;
-		isPlusstmt += "+registration$do/$is+/";
+		isPlusstmt += "+registration$do/$is#/";
 		isPlusstmt += linkContractTemplateAddress;
 
 		setStatements.add(XDI3Statement.create(isPlusstmt));
@@ -1765,7 +1794,7 @@ public class PersonalCloud {
 		policyStmt += relyingPartyCloudNumber;
 		policyStmt += "$from";
 		policyStmt += relyingPartyCloudNumber;
-		policyStmt += "+registration$do$if$and/$true/({$from}/$is/"
+		policyStmt += "#registration$do$if$and/$true/({$from}/$is/"
 				+ relyingPartyCloudNumber + ")";
 		setStatements.add(XDI3Statement.create(policyStmt));
 		
@@ -1776,10 +1805,11 @@ public class PersonalCloud {
 		policyStmt += relyingPartyCloudNumber;
 		policyStmt += "$from";
 		policyStmt += relyingPartyCloudNumber;
-		policyStmt += "+registration$do$if$and/$true/({$msg}<$sig><$valid>&/&/true)";
+		policyStmt += "#registration$do$if$and/$true/({$msg}<$sig><$valid>&/&/true)";
 		setStatements.add(XDI3Statement.create(policyStmt));
 		
-		
+		//TBD: Set values dynamically
+		/*
 
 		for (int i = 0; (selectedValues != null) && (i < selectedValues.length); i++) {
 			String value = selectedValues[i];
@@ -1797,13 +1827,26 @@ public class PersonalCloud {
 			stmt += relyingPartyCloudNumber;
 			stmt += "$from";
 			stmt += relyingPartyCloudNumber;
-			stmt += "+registration$do/$get/";
+			stmt += "#registration$do/$get/";
 			stmt += addressPart;
 
-			//System.out.println("Set statements :" + stmt);
+			//logger.debug("Set statements :" + stmt);
 			setStatements.add(XDI3Statement.create(stmt));
 			setStatementsForRemote.add(XDI3Statement.create(stmt));
 		}
+		*/
+		//TBD : hardcode values here
+		
+		String nameStr = respondingPartyCloudNumber + "<#name>&/&/\"John Doe\"" ;  
+		String phoneStr = respondingPartyCloudNumber + "<#phone>&/&/\"+1.1234567890\"" ;
+		String emailStr = respondingPartyCloudNumber + "<#email>&/&/\"john.doe@contact.me\"" ;
+		String cloudNameStr = respondingPartyCloudNumber + "/$is$ref/" + this.getCloudName(cloudNumber.toString()) ;
+		
+		g1.setStatement(XDI3Statement.create(nameStr));
+		g1.setStatement(XDI3Statement.create(phoneStr));
+		g1.setStatement(XDI3Statement.create(emailStr));
+		g1.setStatement(XDI3Statement.create(cloudNameStr));
+		
 		if((selectedValues == null) || selectedValues.length == 0){
 			String stmt = new String();
 			stmt += respondingPartyCloudNumber;
@@ -1811,13 +1854,13 @@ public class PersonalCloud {
 			stmt += relyingPartyCloudNumber;
 			stmt += "$from";
 			stmt += relyingPartyCloudNumber;
-			stmt += "+registration$do/$get/(";
+			stmt += "#registration$do/$get/(";
 			stmt += this.cloudNumber + "/$is$ref/" + this.getCloudName(cloudNumber.toString()) + ")";
 			setStatementsForRemote.add(XDI3Statement.create(stmt));
 		}
-		//System.out.println("All Set statements :" + setStatements);
+		//logger.debug("All Set statements :" + setStatements);
 		MessageResult setResponse = this.setXDIStmts(setStatements);
-		//System.out.println("Set response : " + setResponse);
+		//logger.debug("Set response : " + setResponse);
 
 		String targetSegment = new String();
 		targetSegment += respondingPartyCloudNumber;
@@ -1825,11 +1868,11 @@ public class PersonalCloud {
 		targetSegment += relyingPartyCloudNumber;
 		targetSegment += "$from";
 		targetSegment += relyingPartyCloudNumber;
-		targetSegment += "+registration$do";
+		targetSegment += "#registration$do";
 
-		xdiResponseValues += targetSegment + "/$is+/"
+		xdiResponseValues += targetSegment + "/$is#/"
 				+ linkContractTemplateAddress;
-		g1.setStatement(XDI3Statement.create(targetSegment + "/$is+/"
+		g1.setStatement(XDI3Statement.create(targetSegment + "/$is#/"
 				+ linkContractTemplateAddress));
 
 		// send link contract to the relying party
@@ -1860,11 +1903,13 @@ public class PersonalCloud {
 		Graph g = this.signGraph(
 				Signature.getNormalizedSerialization(g1.getRootContextNode()),
 				respondingPartyCloudNumber);
-		System.out.println("\n\nConnect Response: \n"
+		logger.debug("\n\nConnect Response: \n"
 				+ g.toString("XDI DISPLAY", null) + "\n\n");
 		
 //		String meta_link_contract = this.cloudNumber.toString() + "$to" + relyingPartyCloudNumber
 //		+ "$from" + relyingPartyCloudNumber + "+registration$do";
+		//TBD: Skip for now
+		/*
 		String meta_link_contract = relyingPartyCloudNumber  +"$to$anon$from$public+registration$do";
 		
 		PersonalCloud remoteCloud = PersonalCloud.open(
@@ -1872,13 +1917,15 @@ public class PersonalCloud {
 		XDI3Segment.create(meta_link_contract), "");
 
 		MessageResult remoteSetResponse = remoteCloud.setXDIStmts(setStatementsForRemote);
-		System.out.println("\n\n Remote Set response for setting LCs using meta LC :\n " + remoteSetResponse + "\n\n");
-
+		logger.debug("\n\n Remote Set response for setting LCs using meta LC :\n " + remoteSetResponse + "\n\n");
+		
+		 */
+		logger.debug("\n\n Skip setting LC in acmebread's cloud\n\n");
 		return Signature.getNormalizedSerialization(g.getRootContextNode());
 	}
 
 	public boolean linkContractExists(String connectRequest) {
-		System.out.println("\nChecking if a link contract exists\n");
+		logger.debug("\nChecking if a link contract exists\n");
 		boolean result = false;
 		MemoryJSONGraphFactory graphFactory = new MemoryJSONGraphFactory();
 		String templateOwnerInumber = null;
@@ -1894,7 +1941,7 @@ public class PersonalCloud {
 			for (ContextNode ci : allCNodes) {
 				if (ci.containsContextNode(XDI3SubSegment.create("[$msg]"))) {
 					templateOwnerInumber = ci.toString();
-					System.out.println(templateOwnerInumber);
+					logger.debug(templateOwnerInumber);
 					break;
 				}
 			}
@@ -1912,12 +1959,12 @@ public class PersonalCloud {
 			for (Relation r : allRelations) {
 				if (r.getArcXri().toString().equals("$set{$do}")) {
 					lcTemplateAddress = r.getTargetContextNodeXri().toString();
-					//System.out.println(r.getTargetContextNodeXri());
+					//logger.debug(r.getTargetContextNodeXri());
 				}
 
 			}
 			if (lcTemplateAddress == null) {
-				System.out.println("No LC template address provided");
+				logger.debug("No LC template address provided");
 				return result;
 			}
 		} catch (Exception io) {
@@ -1982,14 +2029,15 @@ public class PersonalCloud {
 			Graph responseGraph = responseFromLocalCloud.getGraph();
 			ContextNode responseRootContext = responseGraph
 					.getRootContextNode();
-//			System.out.println("\n\nLink Contract exists check\n\n"
+//			logger.debug("\n\nLink Contract exists check\n\n"
 //					+ responseGraph.toString());
 			if (!responseGraph.toString().contains("<$false>") && (responseRootContext.getAllLiteralCount() >= queryStmts.size())) {
 				result = true;
 			}
 		}
 
-		return result;
+		//TBD : hardcode return to false so that the flow always takes to authorization screen
+		return false;
 	}
 
 	public String processDisconnectRequest(String requestingParty,
@@ -2004,7 +2052,7 @@ public class PersonalCloud {
 		targetSegment += "+registration$do";
 		MessageResult result = this.delXDIStmts(null,
 				XDI3Segment.create(targetSegment));
-		System.out.println("Result of delete lc :\n" + result.toString());
+		logger.debug("Result of delete lc :\n" + result.toString());
 
 		return "<html><body>Deletion of LC was successful!</body></html>";
 	}
