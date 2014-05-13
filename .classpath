@@ -22,7 +22,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/achowdhu/workspace/utils/json-path-0.8.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/achowdhu/workspace/JSON-java-master/json.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/xdi2"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
