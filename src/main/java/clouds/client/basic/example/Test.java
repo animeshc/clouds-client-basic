@@ -1,24 +1,20 @@
 package clouds.client.basic.example;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Date;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.Hashtable;
-import java.util.Vector;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import xdi2.core.Graph;
 import xdi2.core.constants.XDILinkContractConstants;
 import xdi2.core.xri3.XDI3Segment;
-import xdi2.core.xri3.XDI3Statement;
-import xdi2.messaging.MessageResult;
-import clouds.client.basic.PCAttribute;
-import clouds.client.basic.PCAttributeCollection;
-import clouds.client.basic.PDSEmail;
 import clouds.client.basic.PDSXElement;
 import clouds.client.basic.PDSXElementTemplate;
 import clouds.client.basic.PDSXEntity;
@@ -184,7 +180,7 @@ public class Test {
 //		
 //		PDSXEntity trung = PDSXEntity.get(pc_animesh, "Person", "trung");
 		//pc_animesh.allowAccessToRelationship(XDI3Segment.create(pc_animesh.getCloudNumber().toString() + "<+email>&"),null,XDI3Segment.create("$get"), XDI3Segment.create("+friend"),XDI3Segment.create("+friend"),XDI3Segment.create("=markus"));
-		pc_animesh.allowAccessToRelationship(XDI3Segment.create("=animesh" + "<+personal_email>&"),XDI3Segment.create(pc_animesh.getCloudNumber().toString() + "<+email>&"),XDI3Segment.create("$get"), XDI3Segment.create("+friend"),XDI3Segment.create("+friend"),XDI3Segment.create("=markus"));
+		//pc_animesh.allowAccessToRelationship(XDI3Segment.create("=animesh" + "<+personal_email>&"),XDI3Segment.create(pc_animesh.getCloudNumber().toString() + "<+email>&"),XDI3Segment.create("$get"), XDI3Segment.create("+friend"),XDI3Segment.create("+friend"),XDI3Segment.create("=markus"));
 		
 		pc_animesh.getWholeGraph();
 		PersonalCloud pc_markus2 = PersonalCloud.open(
@@ -234,21 +230,67 @@ public class Test {
 		
 	}
 	public static void main(String args[]) {
-		PersonalCloud.DEFAULT_REGISTRY_URI = "http://mycloud-ote.neustar.biz:12220/";
+		// Create a trust manager that does not validate certificate chains
+				TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
+						public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+							return null;
+						}
+						public void checkClientTrusted(X509Certificate[] certs, String authType) {
+						}
+						public void checkServerTrusted(X509Certificate[] certs, String authType) {
+						}
+					}
+				};
+
+				// Install the all-trusting trust manager
+				SSLContext sc = null;
+				try {
+					sc = SSLContext.getInstance("SSL");
+				} catch (NoSuchAlgorithmException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					sc.init(null, trustAllCerts, new java.security.SecureRandom());
+				} catch (KeyManagementException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+				// Create all-trusting host name verifier
+				HostnameVerifier allHostsValid = new HostnameVerifier() {
+					public boolean verify(String hostname, SSLSession session) {
+						return true;
+					}
+				};
+
+				// Install the all-trusting host verifier
+				HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+				
+		PersonalCloud.DEFAULT_REGISTRY_URI = "https://xdidiscoveryserviceote.xdi.net";
 		System.setProperty("https.protocols", "TLSv1");
-		PersonalCloud debishCloud = PersonalCloud.open(XDI3Segment.create("=debish"), "mysecret", XDI3Segment.create("$do"), "", "");
+		//PersonalCloud animeshCloud = PersonalCloud.open(XDI3Segment.create("=animesh"), XDI3Segment.create("$anon") , XDI3Segment.create("$public$do"), "");
+		PersonalCloud debishCloud = PersonalCloud.open(XDI3Segment.create("=rctest1"), "aa22@bbb", XDI3Segment.create("$do"), "", "");
+		debishCloud.setLinkContractAddress(XDI3Segment.create( debishCloud.getCloudNumber().toString()+ "$to" + debishCloud.getCloudNumber().toString() + "$from$do"));
+		System.out.println(debishCloud.getWholeGraph());
 		if(debishCloud != null){
+			//debishCloud.deleteLinkContract("[=]!:uuid:0b91600d-42f8-4483-8f09-6e59e15ad2e0$to[=]!:uuid:28d89440-4878-407a-8811-be8314a06d9f$from$do","[=]!:uuid:0b91600d-42f8-4483-8f09-6e59e15ad2e0");
+			
 			Hashtable<String,Object> nvPairs = new Hashtable<String,Object>();
-			nvPairs.put(debishCloud.getCloudNumber() + "<+phone>&", "123-456-7890");
-			nvPairs.put(debishCloud.getCloudNumber() + "<+age>&", new Integer(19));
-			nvPairs.put(debishCloud.getCloudNumber() + "<+smoker>&", new Boolean(false));
-			nvPairs.put(debishCloud.getCloudNumber() + "<+height>&", new Double(5.11));
+			nvPairs.put(debishCloud.getCloudNumber() + "<#phone>&", "+1.1234567890");
+			nvPairs.put(debishCloud.getCloudNumber() + "<#name>&", "John Doe");
+			nvPairs.put(debishCloud.getCloudNumber() + "<#email>&", "john.doe@connect.me");
+			nvPairs.put(debishCloud.getCloudNumber() + "<#age>&", new Integer(19));
+			nvPairs.put(debishCloud.getCloudNumber() + "<#smoker>&", new Boolean(false));
+			nvPairs.put(debishCloud.getCloudNumber() + "<#height>&", new Double(5.11));
 			debishCloud.saveNameValuePairs(nvPairs);
-			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<+phone>&"));
-			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<+age>&"));
-			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<+smoker>&"));
-			debishCloud.deleteLiteralValue(debishCloud.getCloudNumber() + "<+phone>&");
-			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<+phone>&"));
+			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<#phone>&"));
+			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<#age>&"));
+			System.out.println(debishCloud.getStringLiteral(debishCloud.getCloudNumber() + "<#smoker>&"));
+			
+			//debishCloud.getWholeGraph();
+			
 			//debishCloud.getWholeGraph();
 		}
 		 //Test.testAddNamedGroup();
