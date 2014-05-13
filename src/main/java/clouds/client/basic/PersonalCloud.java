@@ -301,7 +301,7 @@ public class PersonalCloud {
 		// prepare message envelope for getting email
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(cloudNumber);
 		message.setLinkContractXri(linkContractAddress);
 		message.setSecretToken(secretToken);
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
@@ -423,7 +423,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(cloudNumber);
 		message.setLinkContractXri(linkContractAddress);
 
 		message.setSecretToken(secretToken);
@@ -507,7 +507,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(cloudNumber);
 		message.setLinkContractXri(linkContractAddress);
 
 		message.setSecretToken(secretToken);
@@ -552,7 +552,7 @@ public class PersonalCloud {
 		// prepare message envelope for getting email
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(senderCloudNumber, 0);
+		Message message = messageEnvelope.createMessage(senderCloudNumber);
 		message.setLinkContractXri(linkContractAddress);
 		if (secretToken != null) {
 			message.setSecretToken(secretToken);
@@ -729,7 +729,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(this.senderCloudNumber, 0);
+		Message message = messageEnvelope.createMessage(this.senderCloudNumber);
 		message.setLinkContractXri(linkContractAddress);
 
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(this.cloudNumber));
@@ -796,7 +796,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(this.cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(this.cloudNumber);
 		message.setLinkContractXri(peerCloud.getLinkContractAddress());
 
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(peerCloud.getCloudNumber()));
@@ -861,7 +861,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(cloudNumber);
 		message.setLinkContractXri(linkContractAddress);
 
 		message.setSecretToken(secretToken);
@@ -939,7 +939,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(this.cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(this.cloudNumber);
 		message.setLinkContractXri(peerCloud.getLinkContractAddress());
 		
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(peerCloud.getCloudNumber()));
@@ -1011,7 +1011,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(senderCloudNumber, 0);
+		Message message = messageEnvelope.createMessage(senderCloudNumber);
 		if(linkContractAddress != null && linkContractAddress.toString().equals("$do")){
 			linkContractAddress = RootLinkContract.createRootLinkContractXri(cloudNumber);
 		}
@@ -1121,7 +1121,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(senderCloudNumber, 0);
+		Message message = messageEnvelope.createMessage(senderCloudNumber);
 		if(linkContractAddress != null && linkContractAddress.toString().equals("$do")){
 			linkContractAddress = RootLinkContract.createRootLinkContractXri(cloudNumber);
 		}
@@ -1163,7 +1163,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(senderCloudNumber, 0);
+		Message message = messageEnvelope.createMessage(senderCloudNumber);
 		if(linkContractAddress != null && linkContractAddress.toString().equals("$do")){
 			linkContractAddress = RootLinkContract.createRootLinkContractXri(cloudNumber);
 		}
@@ -1297,7 +1297,7 @@ public class PersonalCloud {
 		// prepare message envelope for getting email
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(cloudNumber);
 		message.setLinkContractXri(linkContractAddress);
 		message.setSecretToken(secretToken);
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
@@ -1349,7 +1349,7 @@ public class PersonalCloud {
 		XDIClient xdiClient = new XDIHttpClient(cloudEndpointURI);
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(cloudNumber);
 		message.setLinkContractXri(linkContractAddress);
 		message.setSecretToken(secretToken);
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
@@ -1399,7 +1399,7 @@ public class PersonalCloud {
 		// assignee
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(cloudNumber);
 		message.setLinkContractXri(linkContractAddress);
 		message.setSecretToken(secretToken);
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(cloudNumber));
@@ -1516,7 +1516,7 @@ public class PersonalCloud {
 		// prepare message envelope
 
 		MessageEnvelope messageEnvelope = new MessageEnvelope();
-		Message message = messageEnvelope.createMessage(this.cloudNumber, 0);
+		Message message = messageEnvelope.createMessage(this.cloudNumber);
 		message.setLinkContractXri(XDI3Segment.create(LCAddress));
 		
 		message.setToPeerRootXri(XdiPeerRoot.createPeerRootArcXri(peerCloud.getCloudNumber()));
