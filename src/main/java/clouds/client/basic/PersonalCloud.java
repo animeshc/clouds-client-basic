@@ -1782,8 +1782,8 @@ public class PersonalCloud {
 		isPlusstmt += "$to";
 		isPlusstmt += relyingPartyCloudNumber;
 		isPlusstmt += "$from";
-		isPlusstmt += relyingPartyCloudNumber;
-		isPlusstmt += "+registration$do/$is#/";
+		
+		isPlusstmt += "#registration$do/$is#/";
 		isPlusstmt += linkContractTemplateAddress;
 
 		setStatements.add(XDI3Statement.create(isPlusstmt));
@@ -1793,7 +1793,7 @@ public class PersonalCloud {
 		policyStmt += "$to";
 		policyStmt += relyingPartyCloudNumber;
 		policyStmt += "$from";
-		policyStmt += relyingPartyCloudNumber;
+		
 		policyStmt += "#registration$do$if$and/$true/({$from}/$is/"
 				+ relyingPartyCloudNumber + ")";
 		setStatements.add(XDI3Statement.create(policyStmt));
@@ -1804,7 +1804,7 @@ public class PersonalCloud {
 		policyStmt += "$to";
 		policyStmt += relyingPartyCloudNumber;
 		policyStmt += "$from";
-		policyStmt += relyingPartyCloudNumber;
+		
 		policyStmt += "#registration$do$if$and/$true/({$msg}<$sig><$valid>&/&/true)";
 		setStatements.add(XDI3Statement.create(policyStmt));
 		
@@ -1853,7 +1853,7 @@ public class PersonalCloud {
 			stmt += "$to";
 			stmt += relyingPartyCloudNumber;
 			stmt += "$from";
-			stmt += relyingPartyCloudNumber;
+			
 			stmt += "#registration$do/$get/(";
 			stmt += this.cloudNumber + "/$is$ref/" + this.getCloudName(cloudNumber.toString()) + ")";
 			setStatementsForRemote.add(XDI3Statement.create(stmt));
@@ -1867,7 +1867,7 @@ public class PersonalCloud {
 		targetSegment += "$to";
 		targetSegment += relyingPartyCloudNumber;
 		targetSegment += "$from";
-		targetSegment += relyingPartyCloudNumber;
+		
 		targetSegment += "#registration$do";
 
 		xdiResponseValues += targetSegment + "/$is#/"
