@@ -1921,7 +1921,7 @@ public class PersonalCloud {
 		
 		 */
 		logger.debug("\n\n Skip setting LC in acmebread's cloud\n\n");
-		return Signature.getNormalizedSerialization(g.getRootContextNode());
+		return g.toString("XDI/JSON", null);
 	}
 
 	public boolean linkContractExists(String connectRequest) {
